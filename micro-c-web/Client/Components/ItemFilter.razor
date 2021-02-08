@@ -1,0 +1,54 @@
+﻿@using MicroCLib.Models;
+
+<div class="btn-group dropright" id="@(Name)Dropdown">
+    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        @Name
+    </button>
+    <div class="dropdown-menu search-filter-dropdown">
+        <!-- Dropdown menu links -->
+        @foreach (var item in Items.GroupBy(ValueFunc))
+        {
+            @if (!string.IsNullOrWhiteSpace(item.Key))
+            {
+                <div class="form-check bg-info">
+                    <input class="form-check-input" type="checkbox" value="" id="@(Name)_@item.Key" @onchange="args => FilterChanged(item.Key, args.Value)">
+                    <label class="form-check-label" for="@(Name)_@item.Key">
+                        @item.Key
+                    </label>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Item> Items { get; set; }
+    [Parameter]
+    public EventCallback<List<Item>> ItemsChanged { get; set; }
+    [Parameter]
+    public Func<Item, string> ValueFunc { get; set; }
+    [Parameter]
+    public string Name { get; set; }
+    [Parameter]
+    public EventCallback<string> FilterAdded { get; set; }
+    [Parameter]
+    public EventCallback<string> FilterRemoved { get; set; }
+
+    private async void FilterChanged(string value, object checkedValue)
+    {
+        if (checkedValue is bool selected)
+        {
+            if (selected)
+            {
+                await FilterAdded.InvokeAsync(value);
+                Console.WriteLine($"{value} is selected");
+            }
+            else
+            {
+                await FilterRemoved.InvokeAsync(value);
+                Console.WriteLine($"{value} is not selected");
+            }
+        }
+    }
+}

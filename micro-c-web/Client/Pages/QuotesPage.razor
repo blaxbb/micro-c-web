@@ -1,0 +1,100 @@
+﻿@page "/quotes"
+@using DataFlareClient;
+@using System.Text.Json;
+@inject HttpClient Http
+@inject IJSRuntime js
+@inject NavigationManager NavManager
+
+<div class="container quotes-page">
+    <div class="row quote-table-header">
+        <div>
+            <button class="btn btn-primary float-right" @onclick="OnInitializedAsync">
+                <span class="oi oi-reload"></span>
+            </button>
+            <a class="btn btn-success float-right" href="/quotes/new">
+                <span class="oi oi-plus"></span>
+            </a>
+        </div>
+    </div>
+
+    @if (flares == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <div class="row">
+            <table class="table table-striped quote-table">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Items</th>
+                        <th scope="col">Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < flares.Count; i++)
+                    {
+                        var flare = flares[i];
+                        var quote = Quotes[i];
+                        <tr @onclick="@(() => NavManager.NavigateTo($"/quotes/{flare.ShortCode}"))"
+                            data-toggle="tooltip"
+                            data-trigger="hover"
+                            data-placement="left"
+                            data-container=".quotes-page"
+                            data-html="true"
+                            title="@(string.Join("&#13;", quote.Select(c => c.Item.Name)))">
+                            <td scope="row">@flare.ShortCode</td>
+                            <td>@flare.Title</td>
+                            <td>@flare.Created</td>
+                            <td>@quote.Count</td>
+                            <td>@quote.Sum(c => c.Item.Price * c.Item.Quantity).ToString("$0.00")</td>
+                            <td class="table-hover-column"><span class="material-icons">launch</span></td>
+                        </tr>
+                    }
+                    @if (flares.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                No quotes found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+
+    private List<Flare> flares;
+    private List<List<MicroCLib.Models.BuildComponent>> Quotes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NavManager.LocationChanged += async (sender, args) =>
+        {
+            await js.InvokeVoidAsync("HideTooltips");
+        };
+
+        await js.InvokeVoidAsync("stopPropagation", "#dd .dropdown-menu");
+
+        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
+
+        if (string.IsNullOrWhiteSpace(currentStore))
+        {
+            return;
+        }
+
+        flares = await DataFlareClient.Flare.GetTag("https://dataflare.bbarrett.me/api/Flare", $"micro-c-{currentStore}");
+        Quotes = flares.Select(f => JsonSerializer.Deserialize<List<MicroCLib.Models.BuildComponent>>(f.Data)).ToList();
+
+        System.Diagnostics.Debug.WriteLine($"Got flares {flares.Count}");
+
+        await js.InvokeVoidAsync("setupTooltips");
+    }
+}

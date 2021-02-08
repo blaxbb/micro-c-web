@@ -1,0 +1,63 @@
+﻿@page "/settings"
+@inject IJSRuntime js;
+<h3>Settings</h3>
+
+<div class="container">
+    @if (UserSettings != null)
+    {
+        <form>
+            <div class="form-group">
+                <label for="storeSelect">Store</label>
+                <select class="form-control"
+                        id="storeSelect"
+                        @onchange="@((args) => UserSettings.Store = args.Value.ToString())">
+                    @foreach (var store in MicroCLib.Models.Stores.AllStores)
+                    {
+                        @if (store.Value == UserSettings.Store)
+                        {
+                            <option selected value="@store.Value">@store.Key</option>
+                        }
+                        else
+                        {
+                            <option value="@store.Value">@store.Key</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tax Rate</label>
+                <input
+                    class="form-control"
+                    type="number"
+                    step=".001"
+                    value="@(UserSettings.TaxRate)"
+                    @onchange="((args) => {
+                                   if(float.TryParse(args.Value.ToString(), out float tax))
+                                   {
+                                       UserSettings.TaxRate = tax;
+                                   }
+                               })"
+                />
+            </div>
+        </form>
+    }
+</div>
+@code {
+    Settings UserSettings;
+    protected override async Task OnInitializedAsync()
+    {
+        UserSettings = await Settings.Get(js);
+
+        Console.WriteLine(UserSettings);
+        Console.WriteLine(UserSettings.Store);
+        Console.WriteLine(UserSettings.TaxRate);
+
+        UserSettings.PropertyChanged += SettingChanged;
+    }
+
+    private async void SettingChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        await js.InvokeVoidAsync("SetLocalStorage", "user-settings", System.Text.Json.JsonSerializer.Serialize(UserSettings));
+    }
+
+}

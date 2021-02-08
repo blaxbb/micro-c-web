@@ -1,0 +1,9 @@
+﻿@page "/"
+<micro_c_web.Client.Components.ItemSearch Action="NavigateItem" />
+
+@code {
+    private void NavigateItem(MicroCLib.Models.Item item)
+    {
+        Console.WriteLine(item.Name);
+    }
+}

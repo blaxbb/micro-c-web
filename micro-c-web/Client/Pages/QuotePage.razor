@@ -1,0 +1,211 @@
+﻿@page "/quotes/{itemId}"
+@using System.Text.Json;
+@using System.Linq;
+@using MicroCLib.Models;
+@using micro_c_web.Client.Components;
+
+@inject NavigationManager Nav;
+
+
+@inject IJSRuntime js;
+
+<Modal Id="editItemModal" Name="@(editModalComponent == null ? "" : editModalComponent.Item.Name)">
+    <EditItem @bind-Component="editModalComponent" ItemSaved=EditItemSaved ItemRemoved="EditItemRemoved" />
+</Modal>
+
+<Modal Id="addItemModal" Name="Add Item">
+    <ItemSearch Action=NewItemSaved ActionName="Add Item" />
+</Modal>
+
+@if (components == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="quote-table-header">
+        <div class="row">
+            <input class="col-sm-9 form-control form-control-lg" type="text" placeholder="Name" @bind-value="Title" />
+            <div class="col-sm-3">
+                <button class="btn btn-primary float-right" @onclick="DoSave">
+                    <span class="material-icons">save</span>
+                </button>
+                <button class="btn btn-success float-right" @onclick="DoAdd">
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
+        </div>
+        @if (UnsavedChanges)
+        {
+            <div class="row alert alert-warning">
+                There are unsaved changes...
+            </div>
+        }
+    </div>
+    <div class="row">
+        <table class="table table-striped quote-table">
+            <thead>
+                <tr>
+                    <th scope="col">SKU</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var comp in components)
+                {
+                    <tr>
+                        <td @onclick="@((args) =>ClickedItem(comp))">@comp.Item.SKU</td>
+                        <td>@comp.Item.Name</td>
+                        <td>@comp.Item.Quantity</td>
+                        <td>@(comp.Item.Price.ToString("$#.00"))</td>
+                        <td>@((comp.Item.Price * comp.Item.Quantity).ToString("$#.00"))</td>
+                        <td><button class="btn btn-primary" @onclick="@(() => EditItem(comp))">Edit</button></td>
+                    </tr>
+                }
+                @if (components.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div>No items added.</div>
+                        </td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="quote-price-summary card text-right col-sm-3 offset-sm-9">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Subtotal: @(components.Sum(c => c.Item.Quantity * c.Item.Price).ToString("$#.00"))</li>
+                <li class="list-group-item">Tax (@($"{UserSettings.TaxRate * 100:0.0}")%): @((components.Sum(c => c.Item.Quantity * c.Item.Price) * UserSettings.TaxRate).ToString("$#.00"))</li>
+                <li class="list-group-item">Total: @((components.Sum(c => c.Item.Quantity * c.Item.Price) * (1 + UserSettings.TaxRate)).ToString("$#.00"))</li>
+            </ul>
+        </div>
+    </div>
+}
+
+
+@code
+{
+    [Parameter]
+    public string itemId { get; set; }
+
+    public string Title { get; set; }
+
+    public bool UnsavedChanges { get; set; }
+
+    private List<BuildComponent> components;
+    private BuildComponent selected;
+    private BuildComponent editModalComponent;
+
+    private float Subtotal;
+    private float Tax;
+    private float Total;
+
+    private Settings UserSettings;
+
+    private void ClickedItem(BuildComponent comp)
+    {
+        Console.WriteLine(comp.Item.Name);
+        js.InvokeAsync<object>("open", $"https://microcenter.com/{comp.Item.URL}", "_blank");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserSettings = await Settings.Get(js);
+        UnsavedChanges = false;
+        DataFlareClient.Flare? flare = null;
+        if (itemId != "new")
+        {
+            flare = await DataFlareClient.Flare.GetShortCode("https://dataflare.bbarrett.me/api/Flare", itemId);
+        }
+
+        if (flare != null && !string.IsNullOrWhiteSpace(flare.Data))
+        {
+            components = JsonSerializer.Deserialize<List<BuildComponent>>(flare.Data);
+            Title = flare.Title;
+
+            Console.WriteLine(JsonSerializer.Serialize(components.FirstOrDefault(), new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            }));
+        }
+        else
+        {
+            components = new List<BuildComponent>();
+        }
+    }
+
+    private async void EditItem(BuildComponent comp)
+    {
+        selected = comp;
+        var json = JsonSerializer.Serialize(comp);
+        var dupe = JsonSerializer.Deserialize<BuildComponent>(json);
+        editModalComponent = dupe;
+        await js.InvokeVoidAsync("ShowModal", "#editItemModal");
+    }
+
+    private void EditItemSaved(BuildComponent comp)
+    {
+        if(selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price)
+        {
+            UnsavedChanges = true;
+        }
+
+        selected.Item.Quantity = comp.Item.Quantity;
+        selected.Item.Price = comp.Item.Price;
+        StateHasChanged();
+    }
+
+    private async void DoSave()
+    {
+        Console.WriteLine("DO SAVE");
+        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
+
+        if (string.IsNullOrWhiteSpace(currentStore))
+        {
+            return;
+        }
+
+        var json = JsonSerializer.Serialize(components);
+        var flare = new DataFlareClient.Flare(json);
+        flare.Tag = $"micro-c-{currentStore}";
+        flare.Title = Title;
+
+        var success = await flare.Post("https://dataflare.bbarrett.me/api/Flare");
+        if (success)
+        {
+            UnsavedChanges = false;
+            Nav.NavigateTo($"/quotes/{flare.ShortCode}");
+        }
+    }
+
+    private async void DoAdd()
+    {
+        await js.InvokeVoidAsync("ShowModal", "#addItemModal");
+    }
+
+    private async void NewItemSaved(Item item)
+    {
+        UnsavedChanges = true;
+        await js.InvokeVoidAsync("HideModal", "#addItemModal");
+        components.Add(new BuildComponent()
+        {
+            Item = item
+        });
+        StateHasChanged();
+    }
+
+    private void EditItemRemoved()
+    {
+        UnsavedChanges = true;
+        components.Remove(selected);
+        StateHasChanged();
+    }
+}

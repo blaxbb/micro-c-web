@@ -1,0 +1,220 @@
+﻿@using MicroCLib.Models;
+
+@inject HttpClient Http
+@inject IJSRuntime js
+
+
+<div class="row" style="flex-direction:row;">
+    <div class="col-sm-3">
+
+        <form class="search-form" @onsubmit="SearchSubmit">
+            <div class="input-group row">
+                <div class="col-sm-9">
+                    <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
+                </div>
+                <button class="col-sm-3 btn btn-primary material-icons">search</button>
+            </div>
+            @if (SearchResults != null)
+            {
+                @foreach (var filter in FilterFunctions)
+                {
+                    <ItemFilter Name="@filter.name"
+                                ValueFunc="@filter.filter"
+                                @bind-Items="@SearchResults.Items"
+                                FilterAdded="@(s => AddFilter(filter.name, s))"
+                                FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
+                }
+            }
+        </form>
+
+    </div>
+    <div class="col-sm-9 searchBody">
+        @if (SearchResults != null)
+        {
+            <div class="row">
+                <div class="col-sm-3">Showing @SearchResults.Items.Count/@SearchResults.TotalResults</div>
+                <div class="col-sm-3">Page @SearchResults.Page</div>
+            </div>
+            @foreach (var item in SearchResults.Items.Where(Filter))
+            {
+                <div class="search-item row @(Selected == item ? "selected" :"")"
+                     @onclick="@(() => {
+                                     Selected = item;
+                                     if (string.IsNullOrWhiteSpace(ActionName))
+                                     {
+                                         SubmitItem();
+                                     }
+                                 })">
+                    <div class="col-sm-9">
+                        <div class="search-name">@item.Name</div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="search-brand">@item.Brand</div>
+                            </div>
+                            <div class="col-sm-6 text-right">
+                                <div class="search-sku">@item.SKU</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 text-right">
+                        <div class="search-price">@item.Price</div>
+                        <div class="search-stock">@item.Stock in stock</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+<div class="item-search-footer">
+    @if (Selected != null)
+    {
+        @if (!string.IsNullOrWhiteSpace(ActionName))
+        {
+            <button type="button" class="btn btn-primary" @onclick="SubmitItem">@ActionName</button>
+        }
+    }
+</div>
+
+
+
+
+@code {
+
+    [Parameter]
+    public string ActionName { get; set; }
+
+    [Parameter]
+    public EventCallback<Item> Action { get; set; }
+
+    public SearchResults SearchResults { get; set; }
+
+    private string SearchQuery { get; set; }
+
+    private Item Selected { get; set; }
+
+    private List<string> BrandFilter { get; set; }
+
+    private Dictionary<string, List<string>> Filters { get; } = new Dictionary<string, List<string>>();
+
+    private List<(string name, Func<Item, string> filter)> FilterFunctions;
+
+    protected override async Task OnInitializedAsync()
+    {
+        FilterFunctions = new List<(string, Func<Item, string>)>()
+    {
+            ("Brand", (i) => i.Brand)
+        };
+
+        BrandFilter = new List<string>();
+        ResetFilter();
+        await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
+    }
+
+    private async void SearchSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            return;
+        }
+        Console.WriteLine($"SEARCH SUBMIT {SearchQuery}");
+
+        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
+        if (string.IsNullOrWhiteSpace(currentStore))
+        {
+            return;
+        }
+
+        Dictionary<string, string> query = new Dictionary<string, string>()
+        {
+            { "query", SearchQuery},
+            {"storeId", currentStore },
+            {"categoryFilter", "" },
+            {"orderBy",  "0"},
+            {"page", "0" }
+        };
+        string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
+        SearchResults = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
+        Console.WriteLine(SearchResults);
+        ResetFilter();
+        Selected = null;
+        this.StateHasChanged();
+    }
+
+    private async void SubmitItem()
+    {
+        Console.WriteLine($"Add item {Selected.Name}");
+        await Action.InvokeAsync(Selected);
+    }
+
+    private void BrandFilterChanged(string brand, object checkedValue)
+    {
+        if (checkedValue is bool selected)
+        {
+            if (selected)
+            {
+                BrandFilter.Add(brand);
+                Console.WriteLine($"{brand} is selected");
+            }
+            else
+            {
+                BrandFilter.Remove(brand);
+                Console.WriteLine($"{brand} is not selected");
+            }
+        }
+    }
+
+    private void AddFilter(string filter, string value)
+    {
+        if (!Filters.ContainsKey(filter))
+        {
+            Filters.Add(filter, new List<string>());
+        }
+        Filters[filter].Add(value);
+        Console.WriteLine($"{filter} + {value}");
+    }
+
+    private void RemoveFilter(string filter, string value)
+    {
+        if (!Filters.ContainsKey(filter))
+        {
+            return;
+        }
+        Filters[filter].RemoveAll(f => f == value);
+        Console.WriteLine($"{filter} - {value}");
+    }
+
+    private void ResetFilter()
+    {
+        foreach (var f in Filters)
+        {
+            f.Value.Clear();
+        }
+    }
+
+    private bool Filter(Item item)
+    {
+        if (BrandFilter.Count != 0 && !BrandFilter.Contains(item.Brand))
+        {
+            return false;
+        }
+
+        if (CheckFilter("Brand", item.Brand))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool CheckFilter(string key, string value)
+    {
+        if (Filters.ContainsKey(key)
+            && Filters[key].Count > 0
+            && !Filters[key].Contains(value))
+        {
+            return true;
+        }
+
+        return false;
+    }
+}
