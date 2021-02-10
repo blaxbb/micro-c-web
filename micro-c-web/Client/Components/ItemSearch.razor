@@ -7,36 +7,49 @@
 <div class="row" style="flex-direction:row;">
     <div class="col-sm-3">
 
-        <form class="search-form" @onsubmit="SearchSubmit">
-            <div class="input-group row">
-                <div class="col-sm-9">
-                    <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
+        <form class="search-form" @onsubmit="(() => SearchSubmit())">
+            <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
+            <div class="btn-group dropright">
+                <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="sr-only">Categories</span>
+                </button>
+                <div class="dropdown-menu">
+                    @if (UserSettings != null)
+                    {
+                        @foreach (BuildComponent.ComponentType type in UserSettings.Categories)
+                        {
+                            <a class="dropdown-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                            </a>
+                        }
+                    }
                 </div>
-                <button class="col-sm-3 btn btn-primary material-icons">search</button>
             </div>
-            @if (SearchResults != null)
-            {
-                @foreach (var filter in FilterFunctions)
-                {
-                    <ItemFilter Name="@filter.name"
-                                ValueFunc="@filter.filter"
-                                @bind-Items="@SearchResults.Items"
-                                FilterAdded="@(s => AddFilter(filter.name, s))"
-                                FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
-                }
-            }
         </form>
+
+        @if (Results != null)
+        {
+            @foreach (var filter in FilterFunctions)
+            {
+                <ItemFilter Name="@filter.name"
+                            ValueFunc="@filter.filter"
+                            @bind-Items="@Results.Items"
+                            FilterAdded="@(s => AddFilter(filter.name, s))"
+                            FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
+            }
+        }
 
     </div>
     <div class="col-sm-9 searchBody">
-        @if (SearchResults != null)
+        @if (Results != null)
         {
             <div class="row">
-                <div class="col-sm-3">Showing @SearchResults.Items.Count/@SearchResults.TotalResults</div>
-                <div class="col-sm-3">Page @SearchResults.Page</div>
+                <div class="col-sm-3">Showing @Results.Items.Count/@Results.TotalResults</div>
+                <div class="col-sm-3">Page @Results.Page</div>
             </div>
-            @foreach (var item in SearchResults.Items.Where(Filter))
-            {
+            @foreach (var item in Results.Items.Where(Filter))
+                                {
                 <div class="search-item row @(Selected == item ? "selected" :"")"
                      @onclick="@(() => {
                                      Selected = item;
@@ -44,7 +57,7 @@
                                      {
                                          SubmitItem();
                                      }
-                                 })">
+                        })">
                     <div class="col-sm-9">
                         <div class="search-name">@item.Name</div>
                         <div class="row">
@@ -79,14 +92,14 @@
 
 
 @code {
-
+    Settings UserSettings;
     [Parameter]
     public string ActionName { get; set; }
 
     [Parameter]
     public EventCallback<Item> Action { get; set; }
 
-    public SearchResults SearchResults { get; set; }
+    public SearchResults Results { get; set; }
 
     private string SearchQuery { get; set; }
 
@@ -100,8 +113,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        UserSettings = await Settings.Get(js);
+
         FilterFunctions = new List<(string, Func<Item, string>)>()
-    {
+        {
             ("Brand", (i) => i.Brand)
         };
 
@@ -110,7 +125,7 @@
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
     }
 
-    private async void SearchSubmit()
+    private async void SearchSubmit(string categoryFilter = "")
     {
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
@@ -128,13 +143,13 @@
         {
             { "query", SearchQuery},
             {"storeId", currentStore },
-            {"categoryFilter", "" },
+            {"categoryFilter", categoryFilter },
             {"orderBy",  "0"},
             {"page", "0" }
         };
         string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
-        SearchResults = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
-        Console.WriteLine(SearchResults);
+        Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
+        Console.WriteLine(Results);
         ResetFilter();
         Selected = null;
         this.StateHasChanged();

@@ -1,5 +1,7 @@
 ﻿@page "/settings"
 @inject IJSRuntime js;
+@using static MicroCLib.Models.BuildComponent;
+@using static MicroCLib.Models.BuildComponent.ComponentType;
 <h3>Settings</h3>
 
 <div class="container">
@@ -26,33 +28,119 @@
             </div>
             <div class="form-group">
                 <label>Tax Rate</label>
-                <input
-                    class="form-control"
-                    type="number"
-                    step=".001"
-                    value="@(UserSettings.TaxRate)"
-                    @onchange="((args) => {
+                <input class="form-control"
+                       type="number"
+                       step=".001"
+                       value="@(UserSettings.TaxRate)"
+                       @onchange="((args) => {
                                    if(float.TryParse(args.Value.ToString(), out float tax))
                                    {
                                        UserSettings.TaxRate = tax;
                                    }
-                               })"
-                />
+                               })" />
+            </div>
+            <div class="form-group">
+                <label>Presets</label>
+                <select class="form-control" id="PresetSelect" @onchange="((args) => PresetChanged((string)args.Value))">
+                    @foreach (var preset in Presets)
+                    {
+                        @if (preset == CategoriesPreset)
+                        {
+                            <option selected value="@preset">@preset</option>
+                        }
+                        else
+                        {
+                            <option value="@preset">@preset</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Categories</label>
+                <ul class="list-group" id="settings-category-items">
+                </ul>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="addCategoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Add Category
+                    </button>
+                    <div class="dropdown-menu" id="otherCategoryDropdown" aria-labelledby="addCategoryDropdown">
+                        @foreach (var cat in OtherCategories)
+                        {
+                            <button class="dropdown-item" type="button" @onclick="(() => AddCategory(cat))">@cat</button>
+                        }
+                    </div>
+                </div>
             </div>
         </form>
     }
 </div>
+
 @code {
     Settings UserSettings;
+
+    string CategoriesPreset { get; set; }
+    List<ComponentType> Categories { get; set; }
+    List<ComponentType> OtherCategories { get; set; }
+    List<int> Indicies = new List<int>();
+
+    string[] Presets = new string[]
+    {
+        "Custom",
+        "BYO",
+        "GS",
+        "Sys"
+    };
+
     protected override async Task OnInitializedAsync()
     {
         UserSettings = await Settings.Get(js);
 
-        Console.WriteLine(UserSettings);
-        Console.WriteLine(UserSettings.Store);
-        Console.WriteLine(UserSettings.TaxRate);
+        if(UserSettings.Categories == null || UserSettings.Categories.Count == 0)
+        {
+            Categories = new List<ComponentType>()
+            {
+                ComponentType.CPU,
+                ComponentType.Monitor,
+                ComponentType.Printer
+            };
+        }
+        else
+        {
+            Categories = UserSettings.Categories.ToList();
+            CategoriesPreset = UserSettings.CategoriesPreset;
+        }
+
+        GetOtherCategories();
 
         UserSettings.PropertyChanged += SettingChanged;
+    }
+
+    private void GetOtherCategories()
+    {
+        OtherCategories = Enum.GetValues(typeof(ComponentType)).Cast<ComponentType>().Except(Categories).ToList();
+        Indicies = new List<int>(Categories.Count);
+        for (int i = 0; i < Categories.Count; i++)
+        {
+            Indicies.Add(i);
+        }
+    }
+
+    private async Task SetCustomized()
+    {
+        UserSettings.CategoriesPreset = "";
+        await js.InvokeVoidAsync("SetSelectValue", "#PresetSelect", "Custom");
+    }
+
+
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            var obj = DotNetObjectReference.Create(this);
+            await js.InvokeVoidAsync("CreateSortable", "#settings-category-items", Categories.Select(c => c.ToString()), obj);
+        }
+        base.OnAfterRender(firstRender);
     }
 
     private async void SettingChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
@@ -60,4 +148,164 @@
         await js.InvokeVoidAsync("SetLocalStorage", "user-settings", System.Text.Json.JsonSerializer.Serialize(UserSettings));
     }
 
+    [JSInvokable]
+    public async void CategoryIndexChanged(int startIndex, int endIndex)
+    {
+        bool pushItemsUp = true;
+        if(startIndex > endIndex)
+        {
+            pushItemsUp = false;
+        }
+        int min = startIndex < endIndex ? startIndex : endIndex;
+        int max = startIndex < endIndex ? endIndex : startIndex;
+
+        for (int i = 0; i < Indicies.Count; i++)
+        {
+            if(Indicies[i] == startIndex)
+            {
+                Indicies[i] = endIndex;
+            }
+            else if (pushItemsUp)
+            {
+                if(Indicies[i] > min && Indicies[i] <= max)
+                {
+                    Indicies[i] = Indicies[i] - 1;
+                }
+            }
+            else
+            {
+                if (Indicies[i] >= min && Indicies[i] < max)
+                {
+                    Indicies[i] = Indicies[i] + 1;
+                }
+            }
+        }
+
+        await SetCustomized();
+        var newCats = new ComponentType[Indicies.Count];
+        for(int i = 0; i < Indicies.Count; i++)
+        {
+            var cat = Categories[i];
+            newCats[Indicies[i]] = cat;
+        }
+        UserSettings.Categories = newCats.ToList();
+    }
+
+    private async void PresetChanged(string value)
+    {
+        IEnumerable<ComponentType> preset = null;
+        switch (value)
+        {
+            case "BYO":
+                preset = PresetBYO();
+                break;
+            case "GS":
+                preset = PresetGS();
+                break;
+            case "Sys":
+                preset = PresetSystems();
+                break;
+        }
+
+        if(preset != null)
+        {
+            UserSettings.CategoriesPreset = value;
+            Categories = preset.ToList();
+            GetOtherCategories();
+
+            await js.InvokeVoidAsync("CreateSortable",
+                "#settings-category-items",
+                Categories.Select(c => c.ToString()),
+                DotNetObjectReference.Create(this));
+
+            UserSettings.Categories = Categories.ToList();
+
+            this.StateHasChanged();
+        }
+    }
+
+    private async void AddCategory(ComponentType type)
+    {
+        await SetCustomized();
+        Categories.Add(type);
+        OtherCategories.Remove(type);
+        UserSettings.Categories = Categories.ToList();
+        Indicies.Add(Indicies.Count);
+        this.StateHasChanged();
+    }
+
+    #region PRESETS
+
+    private static IEnumerable<ComponentType> PresetBYO()
+    {
+        yield return BuildService;
+        yield return ComponentType.OperatingSystem;
+        yield return CPU;
+        yield return Motherboard;
+        yield return RAM;
+        yield return Case;
+        yield return PowerSupply;
+        yield return GPU;
+        yield return SSD;
+        yield return HDD;
+        yield return CPUCooler;
+        yield return WaterCoolingKit;
+        yield return CaseFan;
+    }
+    private static IEnumerable<ComponentType> PresetSystems()
+    {
+        yield return Desktop;
+        yield return Laptop;
+        yield return Monitor;
+        yield return Keyboard;
+        yield return Mouse;
+        yield return Printer;
+    }
+
+    private static IEnumerable<ComponentType> PresetGS()
+    {
+        yield return WirelessRouter;
+        yield return WiredRouter;
+        yield return WiredNetworkAdapter;
+        yield return NetworkingPowerline;
+        yield return POENetworkAdapter;
+        yield return NetworkSwitch;
+        yield return WirelessAdapter;
+        yield return WirelessAccessPoint;
+        yield return WirelessBoosters;
+        yield return NetworkingBridge;
+        yield return NetworkingCable;
+        yield return NetworkingAccessory;
+        yield return NetworkAttachedStorage;
+        yield return BluetoothAdapter;
+        yield return Keyboard;
+        yield return Mouse;
+        yield return Headphones;
+        yield return Speakers;
+        yield return ExternalDrives;
+        yield return UninteruptablePowerSupply;
+        yield return GameAccessories;
+        yield return GameControllers;
+        yield return Xbox;
+        yield return Playstation;
+        yield return Nintendo;
+        yield return InkAndToner;
+    }
+
+    private static IEnumerable<ComponentType> PresetCE()
+    {
+        yield return Television;
+        yield return HomeTheaterAudio;
+        yield return HomeTheaterWireless;
+        yield return StreamingMedia;
+        yield return Printer;
+        yield return InkAndToner;
+        yield return SecurityCamera;
+        yield return SecurityCameraKit;
+        yield return HomeAutomation;
+        yield return Projectors;
+        yield return DigitalCamera;
+        yield return FlashMemory;
+    }
+    #endregion
 }

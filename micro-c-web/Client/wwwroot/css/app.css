@@ -202,3 +202,8 @@ tr:hover .table-hover-column {
     max-width: 300px;
     padding: 1em;
 }
+
+#settings-category-items {
+    max-height: 300px;
+    overflow-y: scroll;
+}
