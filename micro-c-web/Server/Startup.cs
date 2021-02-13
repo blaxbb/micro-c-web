@@ -1,7 +1,9 @@
+using micro_c_web.Server.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +24,15 @@ namespace micro_c_web.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            //var secrets = Configuration.GetSection(Secrets.SecretsName).Get<Secrets>();
+            //if (secrets != null)
+            //{
+            //    var connection = $"Server=db;Database=master;User=sa;Password={secrets.DbPassword};";
+
+            //    services.AddDbContext<ApplicationDbContext>(options =>
+            //        options.UseSqlServer(connection)
+            //    );
+            //}
 
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -30,6 +41,8 @@ namespace micro_c_web.Server
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            //context.Database.Migrate();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

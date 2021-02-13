@@ -165,11 +165,11 @@ else
 
     private async void DoSave()
     {
-        Console.WriteLine("DO SAVE");
-        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
+        var currentStore = UserSettings.Store;
 
         if (string.IsNullOrWhiteSpace(currentStore))
         {
+            Console.WriteLine("Error: Store not defined.");
             return;
         }
 

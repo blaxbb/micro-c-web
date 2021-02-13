@@ -9,7 +9,7 @@
 
         <form class="search-form" @onsubmit="(() => SearchSubmit())">
             <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
-            <div class="btn-group dropright">
+            <div class="btn-group dropright search-sidebar-item">
                 <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
                 <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="sr-only">Categories</span>
@@ -30,6 +30,14 @@
 
         @if (Results != null)
         {
+            <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
+                </label>
+                <label class="btn btn-primary active">
+                    <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
+                </label>
+            </div>
             @foreach (var filter in FilterFunctions)
             {
                 <ItemFilter Name="@filter.name"
@@ -44,12 +52,25 @@
     <div class="col-sm-9 searchBody">
         @if (Results != null)
         {
-            <div class="row">
-                <div class="col-sm-3">Showing @Results.Items.Count/@Results.TotalResults</div>
-                <div class="col-sm-3">Page @Results.Page</div>
+            <div class="search-header row">
+                <div class="col-sm-8">Name</div>
+                <div class="col-sm-2" @onclick="@((args) => SetSort("stock"))">
+                    @if (SortField == "stock" && SortAscending)
+                    {<span class="material-icons">arrow_upward</span>}
+                    @if (SortField == "stock" && !SortAscending)
+                    {<span class="material-icons">arrow_downward</span>}
+                    Stock
+                </div>
+                <div class="col-sm-2 text-right" @onclick="@((args) => SetSort("price"))">
+                    @if (SortField == "price" && SortAscending)
+                    {<span class="material-icons">arrow_upward</span>}
+                    @if (SortField == "price" && !SortAscending)
+                    {<span class="material-icons">arrow_downward</span>}
+                    Price
+                </div>
             </div>
-            @foreach (var item in Results.Items.Where(Filter))
-                                {
+            @foreach (var item in Results.Items.Where(Filter).OrderBy(SortFunc))
+            {
                 <div class="search-item row @(Selected == item ? "selected" :"")"
                      @onclick="@(() => {
                                      Selected = item;
@@ -58,23 +79,21 @@
                                          SubmitItem();
                                      }
                         })">
-                    <div class="col-sm-9">
+                    <div class="col-sm-8">
                         <div class="search-name">@item.Name</div>
                         <div class="row">
-                            <div class="col-sm-6">
-                                <div class="search-brand">@item.Brand</div>
-                            </div>
-                            <div class="col-sm-6 text-right">
-                                <div class="search-sku">@item.SKU</div>
-                            </div>
+                            <div class="search-brand col-sm-6">@item.SKU</div>
+                            <div class="col-sm-6 search-brand">@item.Brand</div>
                         </div>
                     </div>
-                    <div class="col-sm-3 text-right">
-                        <div class="search-price">@item.Price</div>
-                        <div class="search-stock">@item.Stock in stock</div>
-                    </div>
+                    <div class="col-sm-2 search-stock">@item.Stock in stock</div>
+                    <div class="col-sm-2 text-right search-price">$@string.Format("{0:0.00}", item.Price)</div>
                 </div>
             }
+            <div class="row">
+                <div class="offset-sm-8 col-sm-2">@Results.Items.Count/@Results.TotalResults</div>
+                <div class="col-sm-2">Page @Results.Page</div>
+            </div>
         }
     </div>
 </div>
@@ -105,11 +124,16 @@
 
     private Item Selected { get; set; }
 
+    private bool InStockOnly { get; set; }
+
     private List<string> BrandFilter { get; set; }
 
     private Dictionary<string, List<string>> Filters { get; } = new Dictionary<string, List<string>>();
 
     private List<(string name, Func<Item, string> filter)> FilterFunctions;
+
+    private string SortField;
+    private bool SortAscending;
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,7 +141,58 @@
 
         FilterFunctions = new List<(string, Func<Item, string>)>()
         {
-            ("Brand", (i) => i.Brand)
+            ("Brand", (i) => i.Brand),
+        };
+        Results = new SearchResults()
+        {
+            Items = new List<Item>()
+            {
+                new Item()
+                {
+                    Name = "AAAA",
+                    OriginalPrice = 99.99f,
+                    Price = 49.99f,
+                    Brand = "A Brand",
+                    Stock = "5",
+                    SKU = "111111"
+                },
+                new Item()
+                {
+                    Name = "AZXY",
+                    OriginalPrice = 99.99f,
+                    Price = 79.99f,
+                    Brand = "A Brand",
+                    Stock = "2",
+                    SKU = "121212"
+                },
+                new Item()
+                {
+                    Name = "BBBB2",
+                    OriginalPrice = 99.99f,
+                    Price = .99f,
+                    Brand = "B Brand",
+                    Stock = "25",
+                    SKU = "323232"
+                },
+                new Item()
+                {
+                    Name = "BBBB",
+                    OriginalPrice = 99.99f,
+                    Price = .99f,
+                    Brand = "B Brand",
+                    Stock = "25+",
+                    SKU = "323232"
+                },
+                new Item()
+                {
+                    Name = "OOS",
+                    OriginalPrice = 99.99f,
+                    Price = .99f,
+                    Brand = "B Brand",
+                    Stock = "0",
+                    SKU = "323232"
+                },
+            }
         };
 
         BrandFilter = new List<string>();
@@ -129,13 +204,18 @@
     {
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
-            return;
+            if(string.IsNullOrWhiteSpace(categoryFilter))
+            {
+                return;
+            }
+            SearchQuery = "";
         }
         Console.WriteLine($"SEARCH SUBMIT {SearchQuery}");
 
-        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
+        var currentStore = UserSettings.Store;
         if (string.IsNullOrWhiteSpace(currentStore))
         {
+            Console.WriteLine("Error: Store not found!");
             return;
         }
 
@@ -159,6 +239,17 @@
     {
         Console.WriteLine($"Add item {Selected.Name}");
         await Action.InvokeAsync(Selected);
+    }
+
+    private void SetSort(string sort)
+    {
+        if(SortField == sort)
+        {
+            SortAscending = !SortAscending;
+            return;
+        }
+        SortField = sort;
+        SortAscending = false;
     }
 
     private void BrandFilterChanged(string brand, object checkedValue)
@@ -206,6 +297,34 @@
         }
     }
 
+    private float SortFunc(Item item)
+    {
+        float retVal = 0f;
+        switch (SortField)
+        {
+            case "price":
+                retVal = item.Price;
+                break;
+            case "stock":
+                var numbString = System.Text.RegularExpressions.Regex.Match(item.Stock, "\\d*");
+                if (int.TryParse(numbString.Value, out int val))
+                {
+                    if (item.Stock.Contains('+'))
+                    {
+                        val++;
+                    }
+
+                    retVal = val;
+                }
+                break;
+        }
+        if(!SortAscending)
+        {
+            retVal *= -1;
+        }
+        return retVal;
+    }
+
     private bool Filter(Item item)
     {
         if (BrandFilter.Count != 0 && !BrandFilter.Contains(item.Brand))
@@ -214,6 +333,11 @@
         }
 
         if (CheckFilter("Brand", item.Brand))
+        {
+            return false;
+        }
+
+        if(InStockOnly && item.Stock == "0")
         {
             return false;
         }

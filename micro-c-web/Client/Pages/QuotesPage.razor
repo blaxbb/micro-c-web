@@ -70,12 +70,12 @@
 </div>
 
 @code {
-
+    Settings UserSettings;
     private List<Flare> flares;
     private List<List<MicroCLib.Models.BuildComponent>> Quotes;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
+        
         NavManager.LocationChanged += async (sender, args) =>
         {
             await js.InvokeVoidAsync("HideTooltips");
@@ -83,18 +83,15 @@
 
         await js.InvokeVoidAsync("stopPropagation", "#dd .dropdown-menu");
 
-        var currentStore = await js.InvokeAsync<string>("GetLocalStorage", "store");
-
+        UserSettings = await Settings.Get(js);
+        var currentStore = UserSettings.Store;
         if (string.IsNullOrWhiteSpace(currentStore))
         {
+            Console.WriteLine("NO STORE");
             return;
         }
-
         flares = await DataFlareClient.Flare.GetTag("https://dataflare.bbarrett.me/api/Flare", $"micro-c-{currentStore}");
         Quotes = flares.Select(f => JsonSerializer.Deserialize<List<MicroCLib.Models.BuildComponent>>(f.Data)).ToList();
-
-        System.Diagnostics.Debug.WriteLine($"Got flares {flares.Count}");
-
         await js.InvokeVoidAsync("setupTooltips");
     }
 }

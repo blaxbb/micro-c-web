@@ -90,9 +90,28 @@ a, .btn-link {
     overflow-y: scroll;
 }
 
+.search-sidebar-item {
+    width: 100%;
+    margin: .25em 0 .25em 0;
+}
+
+.search-stock, .search-price {
+    margin: auto;
+}
+
 .search-brand, .search-sku {
     color: darkgray;
     font-size: 12px;
+}
+
+.search-header {
+    padding: 1em;
+    border: 0px solid gray;
+    border-bottom-width: 1px;
+}
+
+.search-header .material-icons {
+    font-size: inherit;
 }
 
 .search-item {
