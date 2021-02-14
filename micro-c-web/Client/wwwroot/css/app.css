@@ -86,8 +86,12 @@ a, .btn-link {
 }
 
 .modal .searchBody {
-    height: 75vh;
+    height: 100vh;
     overflow-y: scroll;
+}
+
+.searchBody {
+    flex: 1;
 }
 
 .search-sidebar-item {
@@ -95,7 +99,7 @@ a, .btn-link {
     margin: .25em 0 .25em 0;
 }
 
-.search-stock, .search-price {
+.search-stock, .search-price, .search-brand {
     margin: auto;
 }
 
@@ -119,14 +123,10 @@ a, .btn-link {
 }
 
 .search-item:nth-of-type(odd) {
-    background: lightgray;
+    background: #444;
 }
 
-.search-item:nth-of-type(odd):hover {
-    background: gray;
-}
-
-.search-item:nth-of-type(even):hover {
+.search-item:hover {
     background: gray;
 }
 
@@ -225,4 +225,55 @@ tr:hover .table-hover-column {
 #settings-category-items {
     max-height: 300px;
     overflow-y: scroll;
+}
+
+.column-sort {
+    cursor: pointer;
+}
+
+.quote-list-item {
+    cursor: pointer;
+}
+
+.quote-item-sku {
+    cursor: pointer;
+}
+
+.navbar .nav-link,.navbar .navbar-brand {
+    color: lightgray;
+}
+
+.navbar .nav-link.active {
+    border: solid 1px #007bff;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    padding: 1em;
+    z-index: 10;
+}
+
+.content {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
+.main > .content {
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
+.form-control {
+    color: rgb(189, 183, 175);
+    background-color: rgb(24, 26, 27);
+    border-color: rgb(129, 120, 106);
+}
+
+.form-control:focus {
+    color: rgb(189, 183, 175);
+    background-color: rgb(24, 26, 27);
+    border-color: rgb(129, 120, 106);
 }

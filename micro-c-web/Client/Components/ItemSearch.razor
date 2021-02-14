@@ -5,7 +5,7 @@
 
 
 <div class="row" style="flex-direction:row;">
-    <div class="col-sm-3">
+    <div class="sidebar bg-dark">
 
         <form class="search-form" @onsubmit="(() => SearchSubmit())">
             <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
@@ -31,10 +31,10 @@
         @if (Results != null)
         {
             <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
-                <label class="btn btn-primary">
+                <label class="btn btn-outline-primary">
                     <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
                 </label>
-                <label class="btn btn-primary active">
+                <label class="btn btn-outline-primary active">
                     <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
                 </label>
             </div>
@@ -46,22 +46,27 @@
                             FilterAdded="@(s => AddFilter(filter.name, s))"
                             FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
             }
+            <div class="row mt-auto">
+                <div class="col-sm-6">@Results.Items.Count/@Results.TotalResults</div>
+                <div class="col-sm-6">Page @Results.Page</div>
+            </div>
         }
 
     </div>
-    <div class="col-sm-9 searchBody">
+    <div class="searchBody">
         @if (Results != null)
         {
             <div class="search-header row">
-                <div class="col-sm-8">Name</div>
-                <div class="col-sm-2" @onclick="@((args) => SetSort("stock"))">
+                <div class="col-sm-6">Name</div>
+                <div class="col-sm-2">Brand</div>
+                <div class="col-sm-2 column-sort" @onclick="@((args) => SetSort("stock"))">
                     @if (SortField == "stock" && SortAscending)
                     {<span class="material-icons">arrow_upward</span>}
                     @if (SortField == "stock" && !SortAscending)
                     {<span class="material-icons">arrow_downward</span>}
                     Stock
                 </div>
-                <div class="col-sm-2 text-right" @onclick="@((args) => SetSort("price"))">
+                <div class="col-sm-2 text-right column-sort" @onclick="@((args) => SetSort("price"))">
                     @if (SortField == "price" && SortAscending)
                     {<span class="material-icons">arrow_upward</span>}
                     @if (SortField == "price" && !SortAscending)
@@ -79,21 +84,15 @@
                                          SubmitItem();
                                      }
                         })">
-                    <div class="col-sm-8">
+                    <div class="col-sm-6">
                         <div class="search-name">@item.Name</div>
-                        <div class="row">
-                            <div class="search-brand col-sm-6">@item.SKU</div>
-                            <div class="col-sm-6 search-brand">@item.Brand</div>
-                        </div>
+                        <div class="search-sku">@item.SKU</div>
                     </div>
+                    <div class="col-sm-2 search-brand">@item.Brand</div>
                     <div class="col-sm-2 search-stock">@item.Stock in stock</div>
                     <div class="col-sm-2 text-right search-price">$@string.Format("{0:0.00}", item.Price)</div>
                 </div>
             }
-            <div class="row">
-                <div class="offset-sm-8 col-sm-2">@Results.Items.Count/@Results.TotalResults</div>
-                <div class="col-sm-2">Page @Results.Page</div>
-            </div>
         }
     </div>
 </div>
@@ -143,57 +142,57 @@
         {
             ("Brand", (i) => i.Brand),
         };
-        Results = new SearchResults()
-        {
-            Items = new List<Item>()
-            {
-                new Item()
-                {
-                    Name = "AAAA",
-                    OriginalPrice = 99.99f,
-                    Price = 49.99f,
-                    Brand = "A Brand",
-                    Stock = "5",
-                    SKU = "111111"
-                },
-                new Item()
-                {
-                    Name = "AZXY",
-                    OriginalPrice = 99.99f,
-                    Price = 79.99f,
-                    Brand = "A Brand",
-                    Stock = "2",
-                    SKU = "121212"
-                },
-                new Item()
-                {
-                    Name = "BBBB2",
-                    OriginalPrice = 99.99f,
-                    Price = .99f,
-                    Brand = "B Brand",
-                    Stock = "25",
-                    SKU = "323232"
-                },
-                new Item()
-                {
-                    Name = "BBBB",
-                    OriginalPrice = 99.99f,
-                    Price = .99f,
-                    Brand = "B Brand",
-                    Stock = "25+",
-                    SKU = "323232"
-                },
-                new Item()
-                {
-                    Name = "OOS",
-                    OriginalPrice = 99.99f,
-                    Price = .99f,
-                    Brand = "B Brand",
-                    Stock = "0",
-                    SKU = "323232"
-                },
-            }
-        };
+        //Results = new SearchResults()
+        //{
+        //    Items = new List<Item>()
+        //    {
+        //        new Item()
+        //        {
+        //            Name = "AAAA",
+        //            OriginalPrice = 99.99f,
+        //            Price = 49.99f,
+        //            Brand = "A Brand",
+        //            Stock = "5",
+        //            SKU = "111111"
+        //        },
+        //        new Item()
+        //        {
+        //            Name = "AZXY",
+        //            OriginalPrice = 99.99f,
+        //            Price = 79.99f,
+        //            Brand = "A Brand",
+        //            Stock = "2",
+        //            SKU = "121212"
+        //        },
+        //        new Item()
+        //        {
+        //            Name = "BBBB2",
+        //            OriginalPrice = 99.99f,
+        //            Price = .99f,
+        //            Brand = "B Brand",
+        //            Stock = "25",
+        //            SKU = "323232"
+        //        },
+        //        new Item()
+        //        {
+        //            Name = "BBBB",
+        //            OriginalPrice = 99.99f,
+        //            Price = .99f,
+        //            Brand = "B Brand",
+        //            Stock = "25+",
+        //            SKU = "323232"
+        //        },
+        //        new Item()
+        //        {
+        //            Name = "OOS",
+        //            OriginalPrice = 99.99f,
+        //            Price = .99f,
+        //            Brand = "B Brand",
+        //            Stock = "0",
+        //            SKU = "323232"
+        //        },
+        //    }
+        //};
 
         BrandFilter = new List<string>();
         ResetFilter();

@@ -1,16 +1,25 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
+    @*<div class="sidebar">
         <NavMenu />
-    </div>
+    </div>*@
 
     <div class="main">
-        <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
-        </div>
+        <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+            <a class="navbar-brand" href="#">Micro C Web</a>
+            <NavLink class="nav-link nav-item" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
+            </NavLink>
+            <NavLink class="nav-link" href="quotes">
+                <span class="oi oi-list-rich" aria-hidden="true"></span> Quotes
+            </NavLink>
+            <NavLink class="nav-link ml-auto" href="settings">
+                <span class="oi oi-cog" aria-hidden="true"></span> Settings
+            </NavLink>
+        </nav>
 
-        <div class="content px-4">
+        <div class="content">
             @Body
         </div>
     </div>

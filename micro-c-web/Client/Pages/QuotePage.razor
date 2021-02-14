@@ -58,7 +58,7 @@ else
                 @foreach (var comp in components)
                 {
                     <tr>
-                        <td @onclick="@((args) =>ClickedItem(comp))">@comp.Item.SKU</td>
+                        <td class="quote-item-sku" @onclick="@((args) =>ClickedItem(comp))">@comp.Item.SKU</td>
                         <td>@comp.Item.Name</td>
                         <td>@comp.Item.Quantity</td>
                         <td>@(comp.Item.Price.ToString("$#.00"))</td>

@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "micro-c-web.Client", "micro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "micro-c-web.Shared", "micro-c-web\Shared\micro-c-web.Shared.csproj", "{5C69E152-E34E-40DE-BD13-FA3D58CC29B3}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{77DD13BC-14B9-4A0F-8643-CFCF92FDA9B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5C69E152-E34E-40DE-BD13-FA3D58CC29B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C69E152-E34E-40DE-BD13-FA3D58CC29B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C69E152-E34E-40DE-BD13-FA3D58CC29B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77DD13BC-14B9-4A0F-8643-CFCF92FDA9B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77DD13BC-14B9-4A0F-8643-CFCF92FDA9B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77DD13BC-14B9-4A0F-8643-CFCF92FDA9B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77DD13BC-14B9-4A0F-8643-CFCF92FDA9B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

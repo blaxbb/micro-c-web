@@ -40,7 +40,7 @@
                     {
                         var flare = flares[i];
                         var quote = Quotes[i];
-                        <tr @onclick="@(() => NavManager.NavigateTo($"/quotes/{flare.ShortCode}"))"
+                        <tr class="quote-list-item" @onclick="@(() => NavManager.NavigateTo($"/quotes/{flare.ShortCode}"))"
                             data-toggle="tooltip"
                             data-trigger="hover"
                             data-placement="left"
