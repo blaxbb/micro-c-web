@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  micro-c-web.server:
+    image: ${DOCKER_REGISTRY-}microcwebserver
+    build:
+      context: .
+      dockerfile: micro-c-web/Server/Dockerfile
