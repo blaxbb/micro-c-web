@@ -259,7 +259,7 @@
         Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
         Console.WriteLine(Results);
         ResetFilter();
-
+        SpecFilters.Clear();
         var specFields = Results.Items.SelectMany(i => i.Specs.Keys.ToList()).Distinct().ToList();
         foreach(var field in specFields)
         {

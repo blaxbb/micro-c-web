@@ -1,3 +1,5 @@
+using Hangfire;
+using Hangfire.SqlServer;
 using micro_c_web.Server.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Linq;
 
 namespace micro_c_web.Server
@@ -33,10 +36,29 @@ namespace micro_c_web.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddSwaggerGen();
+
+            services.AddHangfire(configuration => configuration
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(
+                    $"Server=db;Database=master;User=sa;Password={secrets?.DbPassword ?? ""};",
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true
+                    })
+            );
+
+            services.AddHangfireServer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context, IBackgroundJobClient backgroundJobs)
         {
             context.Database.Migrate();
 
@@ -44,6 +66,16 @@ namespace micro_c_web.Server
             {
                 app.UseDeveloperExceptionPage();
                 app.UseWebAssemblyDebugging();
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MicroCWeb V1");
+                });
+
+                app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+                {
+                    Authorization = new[] { new HangfireAuthorizationFilter() }
+                });
             }
             else
             {
@@ -63,6 +95,7 @@ namespace micro_c_web.Server
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
+                endpoints.MapHangfireDashboard();
             });
         }
     }

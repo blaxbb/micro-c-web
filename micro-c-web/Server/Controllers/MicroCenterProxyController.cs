@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using micro_c_web.Server.Data;
 using static MicroCLib.Models.Search;
+using micro_c_web.Server.Models;
 
 namespace micro_c_web.Server.Controllers
 {
@@ -44,6 +45,7 @@ namespace micro_c_web.Server.Controllers
 
         private void LoadCachedProperties(ref SearchResults results)
         {
+            bool needCache = false;
             foreach(var res in results.Items)
             {
                 var cache = _context.ItemCache.FirstOrDefault(i => i.SKU == res.SKU);
@@ -56,6 +58,7 @@ namespace micro_c_web.Server.Controllers
                 {
                     if(!_context.CacheRequests.Any(r => r.Url == res.URL))
                     {
+                        needCache = true;
                         _context.Add(new micro_c_web.Server.Models.ItemCacheRequest()
                         {
                             Url = res.URL
@@ -64,7 +67,12 @@ namespace micro_c_web.Server.Controllers
                 }
             }
 
-             _context.SaveChanges();
+            if (needCache)
+            {
+                _context.SaveChanges();
+                Hangfire.BackgroundJob.Enqueue<CacheProcessor>((c) => c.ProcessAllCached());
+
+            }
         }
     }
 }
