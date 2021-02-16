@@ -5,55 +5,55 @@
 
 
 <div class="row" style="flex-direction:row;">
-    <div class="sidebar bg-dark">
-
-        <form class="search-form" @onsubmit="(() => SearchSubmit())">
-            <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
-            <div class="btn-group dropright search-sidebar-item">
-                <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
-                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="sr-only">Categories</span>
-                </button>
-                <div class="dropdown-menu">
-                    @if (UserSettings != null)
-                    {
-                        @foreach (BuildComponent.ComponentType type in UserSettings.Categories)
+    <div class="sidebar col-sm-3 bg-dark">
+        <div class="sticky-top">
+            <form class="search-form" @onsubmit="(() => SearchSubmit())">
+                <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
+                <div class="btn-group dropright search-sidebar-item">
+                    <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="sr-only">Categories</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        @if (UserSettings != null)
                         {
-                            <a class="dropdown-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
-                                @Enum.GetName(typeof(BuildComponent.ComponentType), type)
-                            </a>
+                            @foreach (BuildComponent.ComponentType type in UserSettings.Categories)
+                            {
+                                <a class="dropdown-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                    @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                                </a>
+                            }
                         }
-                    }
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
 
-        @if (Results != null)
-        {
-            <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
-                <label class="btn btn-outline-primary">
-                    <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
-                </label>
-                <label class="btn btn-outline-primary active">
-                    <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
-                </label>
-            </div>
-            @foreach (var filter in FilterFunctions)
+            @if (Results != null)
             {
-                <ItemFilter Name="@filter.name"
-                            ValueFunc="@filter.filter"
-                            @bind-Items="@Results.Items"
-                            FilterAdded="@(s => AddFilter(filter.name, s))"
-                            FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
+                <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
+                    <label class="btn btn-outline-primary">
+                        <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
+                    </label>
+                    <label class="btn btn-outline-primary active">
+                        <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
+                    </label>
+                </div>
+                @foreach (var filter in FilterFunctions)
+                {
+                    <ItemFilter Name="@filter.name"
+                                ValueFunc="@filter.filter"
+                                @bind-Items="@Results.Items"
+                                FilterAdded="@(s => AddFilter(filter.name, s))"
+                                FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
+                }
+                <div class="row mt-auto">
+                    <div class="col-sm-6">@Results.Items.Count/@Results.TotalResults</div>
+                    <div class="col-sm-6">Page @Results.Page</div>
+                </div>
             }
-            <div class="row mt-auto">
-                <div class="col-sm-6">@Results.Items.Count/@Results.TotalResults</div>
-                <div class="col-sm-6">Page @Results.Page</div>
-            </div>
-        }
-
+        </div>
     </div>
-    <div class="searchBody">
+    <div class="searchBody col-sm-9">
         @if (Results != null)
         {
             <div class="search-header row">
