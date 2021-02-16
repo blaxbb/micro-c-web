@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using micro_c_web.Server.Data;
 using static MicroCLib.Models.Search;
 
 namespace micro_c_web.Server.Controllers
@@ -15,24 +16,55 @@ namespace micro_c_web.Server.Controllers
     public class MicroCenterProxyController : ControllerBase
     {
         private readonly ILogger<MicroCenterProxyController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public MicroCenterProxyController(ILogger<MicroCenterProxyController> logger)
+        public MicroCenterProxyController(ILogger<MicroCenterProxyController> logger, ApplicationDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         [HttpGet]
         [Route("search")]
         public async Task<SearchResults> Get(string query, string storeId, string categoryFilter, OrderByMode orderBy, int page)
         {
-            return await Search.LoadQuery(query, storeId, categoryFilter, orderBy, page);
+            var results = await Search.LoadQuery(query, storeId, categoryFilter, orderBy, page);
+            LoadCachedProperties(ref results);
+            return results;
         }
 
         [HttpGet]
         [Route("searchAll")]
         public async Task<SearchResults> GetAll(string query, string storeId, string categoryFilter, OrderByMode orderBy)
         {
-            return await Search.LoadAll(query, storeId, categoryFilter, orderBy);
+            var results = await Search.LoadAll(query, storeId, categoryFilter, orderBy);
+            LoadCachedProperties(ref results);
+            return results;
+        }
+
+        private void LoadCachedProperties(ref SearchResults results)
+        {
+            foreach(var res in results.Items)
+            {
+                var cache = _context.ItemCache.FirstOrDefault(i => i.SKU == res.SKU);
+                if(cache != null)
+                {
+                    res.Specs = cache.Specs;
+                    res.ComponentType = cache.ProductType;
+                }
+                else
+                {
+                    if(!_context.CacheRequests.Any(r => r.Url == res.URL))
+                    {
+                        _context.Add(new micro_c_web.Server.Models.ItemCacheRequest()
+                        {
+                            Url = res.URL
+                        });
+                    }
+                }
+            }
+
+             _context.SaveChanges();
         }
     }
 }

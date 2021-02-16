@@ -51,6 +51,33 @@
                     <div class="col-sm-6">Page @Results.Page</div>
                 </div>
             }
+            @if(SpecFilters != null)
+            {
+                @foreach(var filter in SpecFilters)
+                {
+                    <div class="btn-group dropright search-sidebar-item" id="@filter.Key">
+                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @filter.Key
+                        </button>
+                        <div class="dropdown-menu search-filter-dropdown">
+                            <!-- Dropdown menu links -->
+                            @foreach (var item in filter.Value)
+                            {
+                                @if (!string.IsNullOrWhiteSpace(item))
+                                {
+                                    <div class="form-check bg-info">
+                                        <input class="form-check-input" type="checkbox" value="" id="@(filter.Key)_@item"
+                                               @onchange="args => FilterChanged(filter.Key, item, args.Value)">
+                                        <label class="form-check-label" for="@(filter.Key)_@item">
+                                            @item
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            }
         </div>
     </div>
     <div class="searchBody col-sm-9">
@@ -130,6 +157,8 @@
     private Dictionary<string, List<string>> Filters { get; } = new Dictionary<string, List<string>>();
 
     private List<(string name, Func<Item, string> filter)> FilterFunctions;
+
+    private Dictionary<string, List<string>> SpecFilters = new Dictionary<string, List<string>>();
 
     private string SortField;
     private bool SortAscending;
@@ -230,6 +259,14 @@
         Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
         Console.WriteLine(Results);
         ResetFilter();
+
+        var specFields = Results.Items.SelectMany(i => i.Specs.Keys.ToList()).Distinct().ToList();
+        foreach(var field in specFields)
+        {
+            var values = Results.Items.Where(i => i.Specs.ContainsKey(field)).Select(i => i.Specs[field]).Distinct().ToList();
+            SpecFilters.Add(field, values);
+        }
+
         Selected = null;
         this.StateHasChanged();
     }
@@ -249,6 +286,23 @@
         }
         SortField = sort;
         SortAscending = false;
+    }
+
+    private async void FilterChanged(string filter, string value, object checkedValue)
+    {
+        if (checkedValue is bool selected)
+        {
+            if (selected)
+            {
+                AddFilter(filter, value);
+                Console.WriteLine($"{value} is selected");
+            }
+            else
+            {
+                RemoveFilter(filter, value);
+                Console.WriteLine($"{value} is not selected");
+            }
+        }
     }
 
     private void BrandFilterChanged(string brand, object checkedValue)
@@ -334,6 +388,15 @@
         if (CheckFilter("Brand", item.Brand))
         {
             return false;
+        }
+
+        foreach(var specFilter in SpecFilters)
+        {
+            string value = item.Specs.ContainsKey(specFilter.Key) ? item.Specs[specFilter.Key] : null;
+            if (CheckFilter(specFilter.Key, value))
+            {
+                return false;
+            }
         }
 
         if(InStockOnly && item.Stock == "0")

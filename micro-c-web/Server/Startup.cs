@@ -24,24 +24,21 @@ namespace micro_c_web.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            //var secrets = Configuration.GetSection(Secrets.SecretsName).Get<Secrets>();
-            //if (secrets != null)
-            //{
-            //    var connection = $"Server=db;Database=master;User=sa;Password={secrets.DbPassword};";
+            var secrets = Configuration.GetSection(Secrets.SecretsName).Get<Secrets>();
+            var connection = $"Server=db;Database=master;User=sa;Password={secrets?.DbPassword ?? ""};";
 
-            //    services.AddDbContext<ApplicationDbContext>(options =>
-            //        options.UseSqlServer(connection)
-            //    );
-            //}
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connection)
+            );
 
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context)
         {
-            //context.Database.Migrate();
+            context.Database.Migrate();
 
             if (env.IsDevelopment())
             {
