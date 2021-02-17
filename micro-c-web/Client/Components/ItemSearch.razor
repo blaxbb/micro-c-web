@@ -158,11 +158,7 @@
 
     private bool InStockOnly { get; set; }
 
-    private List<string> BrandFilter { get; set; }
-
     private Dictionary<string, List<string>> Filters { get; } = new Dictionary<string, List<string>>();
-
-    private List<(string name, Func<Item, string> filter)> FilterFunctions;
 
     private Dictionary<string, List<string>> SpecFilters = new Dictionary<string, List<string>>();
 
@@ -173,10 +169,6 @@
     {
         UserSettings = await Settings.Get(js);
 
-        FilterFunctions = new List<(string, Func<Item, string>)>()
-        {
-            ("Brand", (i) => i.Brand),
-        };
         //Results = new SearchResults()
         //{
         //    Items = new List<Item>()
@@ -229,7 +221,6 @@
         //    }
         //};
 
-        BrandFilter = new List<string>();
         ResetFilter();
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
     }
@@ -352,23 +343,6 @@
         }
     }
 
-    private void BrandFilterChanged(string brand, object checkedValue)
-    {
-        if (checkedValue is bool selected)
-        {
-            if (selected)
-            {
-                BrandFilter.Add(brand);
-                Console.WriteLine($"{brand} is selected");
-            }
-            else
-            {
-                BrandFilter.Remove(brand);
-                Console.WriteLine($"{brand} is not selected");
-            }
-        }
-    }
-
     private void AddFilter(string filter, string value)
     {
         if (!Filters.ContainsKey(filter))
@@ -436,18 +410,13 @@
 
     private bool Filter(Item item)
     {
-        if (BrandFilter.Count != 0 && !BrandFilter.Contains(item.Brand))
-        {
-            return false;
-        }
-
-        if (CheckFilter("Brand", item.Brand))
-        {
-            return false;
-        }
-
         foreach(var specFilter in SpecFilters)
         {
+            if(specFilter.Value.Count == 0)
+            {
+                continue;
+            }
+
             string value = item.Specs.ContainsKey(specFilter.Key) ? item.Specs[specFilter.Key] : null;
             if (CheckFilter(specFilter.Key, value))
             {
