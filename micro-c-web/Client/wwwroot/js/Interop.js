@@ -61,6 +61,6 @@ window.SetSelectValue = function(id, value) {
     $(id).val(value);
 }
 
-window.Uncheck = function (selector) {
-    $(CSS.escape(selector)).prop("checked", false);
+window.Uncheck = function (id) {
+    $('#' + CSS.escape(id)).prop("checked", false);
 }

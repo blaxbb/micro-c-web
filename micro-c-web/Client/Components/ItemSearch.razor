@@ -387,7 +387,7 @@
             return;
         }
 
-        await js.InvokeVoidAsync("Uncheck", $"#{GetFilterId(filter, value)}");
+        await js.InvokeVoidAsync("Uncheck", GetFilterId(filter, value));
 
         Filters[filter].RemoveAll(f => f == value);
         if(Filters[filter].Count == 0)

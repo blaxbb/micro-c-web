@@ -254,6 +254,12 @@ tr:hover .table-hover-column {
     top: 0;
     padding: 1em;
     z-index: 10;
+    max-height: 100vh;
+    overflow-y: scroll;
+}
+
+.sidebar button {
+    overflow: hidden;
 }
 
 .content {
