@@ -65,10 +65,11 @@
                             {
                                 @if (!string.IsNullOrWhiteSpace(item))
                                 {
+                                    var id = GetFilterId(filter.Key, item);
                                     <div class="form-check bg-info">
-                                        <input class="form-check-input" type="checkbox" value="" id="@(filter.Key)_@item"
+                                        <input class="form-check-input" type="checkbox" value="" id="@id"
                                                @onchange="args => FilterChanged(filter.Key, item, args.Value)">
-                                        <label class="form-check-label" for="@(filter.Key)_@item">
+                                        <label class="form-check-label" for="@id">
                                             @item
                                         </label>
                                     </div>
@@ -83,6 +84,23 @@
     <div class="searchBody col-sm-9">
         @if (Results != null)
         {
+            <div class="row">
+                @foreach(var filter in Filters)
+                {
+                    <div class="card d-inline-block filter-card" style="width: 18rem;">
+                        <div class="card-header">@filter.Key</div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var value in filter.Value)
+                            {
+                                <li class="list-group-item">
+                                    <div>@value</div>
+                                    <button class="btn btn-danger float-right" @onclick="@(() => RemoveFilter(filter.Key, value))">X</button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
             <div class="search-header row">
                 <div class="col-sm-6">Name</div>
                 <div class="col-sm-2">Brand</div>
@@ -259,16 +277,37 @@
         Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
         Console.WriteLine(Results);
         ResetFilter();
+
+        SetupSpecFilters();
+
+        Selected = null;
+        this.StateHasChanged();
+    }
+
+    private void SetupSpecFilters()
+    {
         SpecFilters.Clear();
         var specFields = Results.Items.SelectMany(i => i.Specs.Keys.ToList()).Distinct().ToList();
-        foreach(var field in specFields)
+
+        string[] ignore = new string[]
+        {
+            "SKU",
+            "Mfr Part#",
+            "UPC",
+            "What's in the box",
+        };
+
+        foreach(var name in ignore)
+        {
+            specFields.Remove(name);
+        }
+
+
+        foreach (var field in specFields)
         {
             var values = Results.Items.Where(i => i.Specs.ContainsKey(field)).Select(i => i.Specs[field]).Distinct().ToList();
             SpecFilters.Add(field, values);
         }
-
-        Selected = null;
-        this.StateHasChanged();
     }
 
     private async void SubmitItem()
@@ -288,10 +327,16 @@
         SortAscending = false;
     }
 
-    private async void FilterChanged(string filter, string value, object checkedValue)
+    private string GetFilterId(string filter, string value)
+    {
+        return $"{filter}_{value}".Replace(' ', '_');
+    }
+
+    private void FilterChanged(string filter, string value, object checkedValue)
     {
         if (checkedValue is bool selected)
         {
+            Console.WriteLine(@$"{filter} - {value} has been {(selected ? "CHECKED" : "Unchecked")}");
             if (selected)
             {
                 AddFilter(filter, value);
@@ -330,15 +375,24 @@
         }
         Filters[filter].Add(value);
         Console.WriteLine($"{filter} + {value}");
+        this.StateHasChanged();
     }
 
-    private void RemoveFilter(string filter, string value)
+    private async void RemoveFilter(string filter, string value)
     {
         if (!Filters.ContainsKey(filter))
         {
             return;
         }
+
+        await js.InvokeVoidAsync("Uncheck", $"#{GetFilterId(filter, value)}");
+
         Filters[filter].RemoveAll(f => f == value);
+        if(Filters[filter].Count == 0)
+        {
+            Filters.Remove(filter);
+        }
+        this.StateHasChanged();
         Console.WriteLine($"{filter} - {value}");
     }
 

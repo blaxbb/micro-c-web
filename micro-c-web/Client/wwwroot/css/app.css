@@ -277,3 +277,8 @@ tr:hover .table-hover-column {
     background-color: rgb(24, 26, 27);
     border-color: rgb(129, 120, 106);
 }
+
+.filter-card li div {
+    max-width: 75%;
+    display: inline-block;
+}

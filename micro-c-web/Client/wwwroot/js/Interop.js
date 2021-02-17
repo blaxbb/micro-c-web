@@ -60,3 +60,7 @@ window.CreateSortable = function (selector, categories, settingsPage) {
 window.SetSelectValue = function(id, value) {
     $(id).val(value);
 }
+
+window.Uncheck = function (selector) {
+    $(selector).prop("checked", false);
+}
