@@ -54,7 +54,7 @@ namespace micro_c_web.Server.Controllers
                     res.Specs = cache.Specs;
                     res.ComponentType = cache.ProductType;
                 }
-                else
+                else if(!string.IsNullOrWhiteSpace(res.Brand))
                 {
                     if(!_context.CacheRequests.Any(r => r.Url == res.URL))
                     {
@@ -71,7 +71,6 @@ namespace micro_c_web.Server.Controllers
             {
                 _context.SaveChanges();
                 Hangfire.BackgroundJob.Enqueue<CacheProcessor>((c) => c.ProcessAllCached());
-
             }
         }
     }
