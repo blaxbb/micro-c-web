@@ -85,7 +85,7 @@ a, .btn-link {
     padding-bottom: 3px;
 }
 
-.modal .searchBody {
+.modal .item-search-view {
     height: 75vh;
     overflow-y: scroll;
 }

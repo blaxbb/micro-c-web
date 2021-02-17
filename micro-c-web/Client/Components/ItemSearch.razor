@@ -4,7 +4,7 @@
 @inject IJSRuntime js
 
 
-<div class="row" style="flex-direction:row;">
+<div class="row item-search-view" style="flex-direction:row;">
     <div class="sidebar col-sm-3 bg-dark">
         <div class="sticky-top">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
@@ -28,7 +28,7 @@
                 </div>
             </form>
 
-            @if (Results != null)
+            @if (SpecFilters != null && Results != null)
             {
                 <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
                     <label class="btn btn-outline-primary">
@@ -38,46 +38,34 @@
                         <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
                     </label>
                 </div>
-                @foreach (var filter in FilterFunctions)
-                {
-                    <ItemFilter Name="@filter.name"
-                                ValueFunc="@filter.filter"
-                                @bind-Items="@Results.Items"
-                                FilterAdded="@(s => AddFilter(filter.name, s))"
-                                FilterRemoved="@(s => RemoveFilter(filter.name, s))" />
-                }
-                <div class="row mt-auto">
+                <div class="row">
                     <div class="col-sm-6">@Results.Items.Count/@Results.TotalResults</div>
                     <div class="col-sm-6">Page @Results.Page</div>
                 </div>
-            }
-            @if(SpecFilters != null)
-            {
-                @foreach(var filter in SpecFilters)
-                {
-                    <div class="btn-group dropright search-sidebar-item" id="@filter.Key">
-                        <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            @filter.Key
-                        </button>
-                        <div class="dropdown-menu search-filter-dropdown">
-                            <!-- Dropdown menu links -->
+
+                <div id="accordion">
+                    @foreach (var filter in SpecFilters)
+                    {
+                        <div class="row">
+                            <button class="btn btn-primary collapsed w-100" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
+                                @filter.Key
+                            </button>
+                        </div>
+                        <div id="@(CSSEscape($"{filter.Key}_collapse"))" class="collapse" aria-labelledby="@(CSSEscape($"{filter.Key}_heading"))" data-parent="#accordion">
                             @foreach (var item in filter.Value)
                             {
                                 @if (!string.IsNullOrWhiteSpace(item))
                                 {
                                     var id = GetFilterId(filter.Key, item);
-                                    <div class="form-check bg-info">
-                                        <input class="form-check-input" type="checkbox" value="" id="@id"
-                                               @onchange="args => FilterChanged(filter.Key, item, args.Value)">
-                                        <label class="form-check-label" for="@id">
-                                            @item
+                                    <label class="btn btn-primary active w-100 mb-0 text-left">
+                                        <input type="checkbox" value="" autocomplete="off" id="@id"
+                                               @onchange="args => FilterChanged(filter.Key, item, args.Value)"> @item
                                         </label>
-                                    </div>
-                                }
+                                    }
                             }
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             }
         </div>
     </div>
@@ -304,11 +292,23 @@
             specFields.Remove(name);
         }
 
+        specFields.Insert(0, "Brand");
+        foreach(var item in Results.Items)
+        {
+            item.Specs["Brand"] = item.Brand;
+        }
 
         foreach (var field in specFields)
         {
             var values = Results.Items.Where(i => i.Specs.ContainsKey(field)).Select(i => i.Specs[field]).Distinct().ToList();
-            SpecFilters.Add(field, values);
+            if(values.Count != Results.Items.Count)
+            {
+                SpecFilters.Add(field, values);
+            }
+            else
+            {
+                Console.WriteLine($"Skipping {field}");
+            }
         }
     }
 
@@ -473,5 +473,10 @@
         }
 
         return false;
+    }
+
+    private string CSSEscape(string s)
+    {
+        return s.Replace(" ", "_").Replace("/", "\\/");
     }
 }
