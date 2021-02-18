@@ -292,3 +292,11 @@ tr:hover .table-hover-column {
 .search-results-table th .material-icons {
     display: inline;
 }
+
+.search-initial {
+    display: none;
+}
+
+.searchPage .search-initial {
+    display: block;
+}

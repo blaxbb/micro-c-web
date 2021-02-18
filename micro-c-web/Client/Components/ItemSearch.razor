@@ -75,10 +75,10 @@
         </div>
     </div>
     <div class="searchBody col-sm-9">
-        @if (Results != null)
+        @if (State == PageState.Results)
         {
             <div class="row">
-                @foreach(var filter in Filters)
+                @foreach (var filter in Filters)
                 {
                     <div class="card d-inline-block filter-card" style="width: 18rem;">
                         <div class="card-header">@filter.Key</div>
@@ -140,6 +140,56 @@
                 </tbody>
             </table>
         }
+        else if (State == PageState.Initial)
+        {
+            <div class="search-initial">
+                <div class="w-100 d-block">
+                    <h4>Micro C App</h4>
+
+                    <div>
+                        <p>
+                            Unofficial Micro Center Android and iOS app primarily intended for employees.
+                        </p>
+                        <p>
+                            App includes functions for looking up product information, creating customer quotes, and creating system builds. Uses Xamarin Forms as a application framework.
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3 offset-3">
+                        <img class="w-100" src="https://raw.githubusercontent.com/blaxbb/Micro-C-App/master/screenshots/android.png" alt="Android App" />
+                        <a href='https://play.google.com/store/apps/details?id=com.bbarrett.micro_c_app&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'>
+                            <img class="w-100" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' />
+                        </a>
+                    </div>
+                    <div class="col-sm-3">
+                        <img class="w-100" style="padding: 0px 16px;" src="https://raw.githubusercontent.com/blaxbb/Micro-C-App/master/screenshots/ios.png" alt="Android App" />
+                        <a href='https://testflight.apple.com/join/z7dweftj'>
+                            <img class="w-100" alt='Available on Apple TestFlight' src='/testflight.png' />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (State == PageState.Loading)
+        {
+            <div class="d-flex align-items-center">
+                <strong>Loading...</strong>
+                <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+            </div>
+        }
+        else if (State == PageState.Error)
+        {
+            <div class="alert alert-danger mt-3" role="alert">
+                <h4 class="alert-heading">Error!</h4>
+                <p>@ErrorText</p>
+                @if (!string.IsNullOrWhiteSpace(ErrorQuery))
+                {
+                    <hr />
+                    <p>@ErrorQuery</p>
+                }
+            </div>
+        }
     </div>
 </div>
 <div class="item-search-footer">
@@ -156,6 +206,17 @@
 
 
 @code {
+    enum PageState
+    {
+        Initial,
+        Loading,
+        Results,
+        Error
+    }
+    PageState State;
+    string ErrorText;
+    string ErrorQuery;
+
     Settings UserSettings;
     [Parameter]
     public string ActionName { get; set; }
@@ -183,6 +244,7 @@
     protected override async Task OnInitializedAsync()
     {
         UserSettings = await Settings.Get(js);
+        State = PageState.Initial;
 
         //Results = new SearchResults()
         //{
@@ -236,12 +298,14 @@
         //    }
         //};
 
-        ResetFilter();
+        await ResetFilter();
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
     }
 
     private async void SearchSubmit(string categoryFilter = "")
     {
+        State = PageState.Loading;
+        this.StateHasChanged();
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
             if(string.IsNullOrWhiteSpace(categoryFilter))
@@ -258,29 +322,40 @@
             Console.WriteLine("Error: Store not found!");
             return;
         }
-
-        Dictionary<string, string> query = new Dictionary<string, string>()
+        try
         {
-            { "query", SearchQuery},
-            {"storeId", currentStore },
-            {"categoryFilter", categoryFilter },
-            {"orderBy",  "0"},
-            {"page", "0" }
-        };
-        string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
-        Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
-        Console.WriteLine(Results);
-        await ResetFilter();
+            Dictionary<string, string> query = new Dictionary<string, string>()
+            {
+                { "query", SearchQuery},
+                {"storeId", currentStore },
+                {"categoryFilter", categoryFilter },
+                {"orderBy",  "0"},
+                {"page", "0" }
+            };
+            
+            string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
+            Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
+            Console.WriteLine(Results);
+            await ResetFilter();
 
-        SetupSpecFilters();
+            SetupSpecFilters();
 
-        CustomSort = new List<string>()
+            CustomSort = new List<string>()
+            {
+                "Price",
+                "Stock"
+            };
+
+            Selected = null;
+            State = PageState.Results;
+        }
+        catch(Exception e)
         {
-            "Price",
-            "Stock"
-        };
-
-        Selected = null;
+            State = PageState.Error;
+            ErrorText = e.Message;
+            ErrorQuery = SearchQuery;
+            Console.WriteLine(e.ToString());
+        }
         this.StateHasChanged();
     }
 
