@@ -300,3 +300,13 @@ tr:hover .table-hover-column {
 .searchPage .search-initial {
     display: block;
 }
+
+.app-screenshot {
+    max-height: 300px;
+    max-width: 100%;
+}
+
+.app-link {
+    max-height: 75px;
+    max-width: 100%;
+}
