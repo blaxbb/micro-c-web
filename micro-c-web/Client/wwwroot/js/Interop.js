@@ -64,3 +64,7 @@ window.SetSelectValue = function(id, value) {
 window.Uncheck = function (id) {
     $('#' + CSS.escape(id)).prop("checked", false);
 }
+
+window.Collapse = function (selector) {
+    $(selector).collapse('hide');
+}

@@ -288,3 +288,7 @@ tr:hover .table-hover-column {
     max-width: 75%;
     display: inline-block;
 }
+
+.search-results-table th .material-icons {
+    display: inline;
+}

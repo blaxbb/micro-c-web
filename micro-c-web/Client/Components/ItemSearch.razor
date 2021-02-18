@@ -47,9 +47,14 @@
                     @foreach (var filter in SpecFilters)
                     {
                         <div class="row">
-                            <button class="btn btn-primary collapsed w-100" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
-                                @filter.Key
-                            </button>
+                            <div class="btn-group w-100">
+                                <button class="btn btn-primary collapsed col-sm-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
+                                    @filter.Key
+                                </button>
+                                <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))">
+                                    <span class="material-icons">arrow_right</span>
+                                </button>
+                            </div>
                         </div>
                         <div id="@(CSSEscape($"{filter.Key}_collapse"))" class="collapse" aria-labelledby="@(CSSEscape($"{filter.Key}_heading"))" data-parent="#accordion">
                             @foreach (var item in filter.Value)
@@ -89,43 +94,51 @@
                     </div>
                 }
             </div>
-            <div class="search-header row">
-                <div class="col-sm-6">Name</div>
-                <div class="col-sm-2">Brand</div>
-                <div class="col-sm-2 column-sort" @onclick="@((args) => SetSort("stock"))">
-                    @if (SortField == "stock" && SortAscending)
-                    {<span class="material-icons">arrow_upward</span>}
-                    @if (SortField == "stock" && !SortAscending)
-                    {<span class="material-icons">arrow_downward</span>}
-                    Stock
-                </div>
-                <div class="col-sm-2 text-right column-sort" @onclick="@((args) => SetSort("price"))">
-                    @if (SortField == "price" && SortAscending)
-                    {<span class="material-icons">arrow_upward</span>}
-                    @if (SortField == "price" && !SortAscending)
-                    {<span class="material-icons">arrow_downward</span>}
-                    Price
-                </div>
-            </div>
-            @foreach (var item in Results.Items.Where(Filter).OrderBy(SortFunc))
-            {
-                <div class="search-item row @(Selected == item ? "selected" :"")"
-                     @onclick="@(() => {
+            <table class="table table-striped search-results-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Brand</th>
+                        @foreach (var sort in CustomSort)
+                        {
+                            <th class="column-sort" @onclick="@((args) => SetSort(sort))">
+                                @if (SortField == sort && SortAscending)
+                                {<span class="material-icons">arrow_upward</span>}
+                                else if (SortField == sort && !SortAscending)
+                                {<span class="material-icons">arrow_downward</span>}
+                                else
+                                {<span class="material-icons">sort</span>}
+                                @sort
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Results.Items.Where(Filter).OrderBy(SortFunc))
+                    {
+                        <tr class="search-item @(Selected == item ? "selected" : "")"
+                            @onclick="@(() => {
                                      Selected = item;
                                      if (string.IsNullOrWhiteSpace(ActionName))
                                      {
                                          SubmitItem();
                                      }
                         })">
-                    <div class="col-sm-6">
-                        <div class="search-name">@item.Name</div>
-                        <div class="search-sku">@item.SKU</div>
-                    </div>
-                    <div class="col-sm-2 search-brand">@item.Brand</div>
-                    <div class="col-sm-2 search-stock">@item.Stock in stock</div>
-                    <div class="col-sm-2 text-right search-price">$@string.Format("{0:0.00}", item.Price)</div>
-                </div>
-            }
+                            <td>
+                                <div class="search-name">@item.Name</div>
+                                <div class="search-sku">@item.SKU</div>
+                            </td>
+                            <td>
+                                @item.Brand
+                            </td>
+                            @foreach (var sort in CustomSort)
+                            {
+                                <td>@(item.Specs.ContainsKey(sort) ? item.Specs[sort] : "")</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
         }
     </div>
 </div>
@@ -164,6 +177,8 @@
 
     private string SortField;
     private bool SortAscending;
+
+    private List<string> CustomSort;
 
     protected override async Task OnInitializedAsync()
     {
@@ -255,9 +270,15 @@
         string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
         Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
         Console.WriteLine(Results);
-        ResetFilter();
+        await ResetFilter();
 
         SetupSpecFilters();
+
+        CustomSort = new List<string>()
+        {
+            "Price",
+            "Stock"
+        };
 
         Selected = null;
         this.StateHasChanged();
@@ -287,6 +308,8 @@
         foreach(var item in Results.Items)
         {
             item.Specs["Brand"] = item.Brand;
+            item.Specs["Price"] = item.Price.ToString("0.00");
+            item.Specs["Stock"] = item.Stock;
         }
 
         foreach (var field in specFields)
@@ -372,35 +395,47 @@
         Console.WriteLine($"{filter} - {value}");
     }
 
-    private void ResetFilter()
+    private async Task ResetFilter()
     {
-        foreach (var f in Filters)
+        foreach(var filter in Filters)
         {
-            f.Value.Clear();
+            foreach(var value in filter.Value)
+            {
+                await js.InvokeVoidAsync("Uncheck", GetFilterId(filter.Key, value));
+            }
         }
+        await js.InvokeVoidAsync("Collapse", "#accordion .collapse");
+        Filters.Clear();
     }
 
     private float SortFunc(Item item)
     {
-        float retVal = 0f;
-        switch (SortField)
+        if(string.IsNullOrWhiteSpace(SortField))
         {
-            case "price":
-                retVal = item.Price;
-                break;
-            case "stock":
-                var numbString = System.Text.RegularExpressions.Regex.Match(item.Stock, "\\d*");
-                if (int.TryParse(numbString.Value, out int val))
-                {
-                    if (item.Stock.Contains('+'))
-                    {
-                        val++;
-                    }
-
-                    retVal = val;
-                }
-                break;
+            return 0f;
         }
+
+        float retVal = 0f;
+        var str = item.Specs.ContainsKey(SortField) ? item.Specs[SortField] : "";
+
+        var numbString = System.Text.RegularExpressions.Regex.Match(str, "\\d*\\.*\\d*");
+        if (float.TryParse(numbString.Value, out float val))
+        {
+            retVal = val;
+        }
+        else
+        {
+            if(str.Length >= 2)
+            {
+                retVal = (int)str[0] * 1000 + (int)str[1];
+            }
+        }
+
+        if(SortField == "Stock" && item.Stock.Contains('+'))
+        {
+            retVal++;
+        }
+
         if(!SortAscending)
         {
             retVal *= -1;
@@ -442,6 +477,21 @@
         }
 
         return false;
+    }
+
+    private void ToggleCustomSort(string sort)
+    {
+        if(CustomSort.Contains(sort))
+        {
+            CustomSort.Remove(sort);
+        }
+        else
+        {
+            CustomSort.Add(sort);
+            SetSort(sort);
+        }
+
+
     }
 
     private string CSSEscape(string s)
