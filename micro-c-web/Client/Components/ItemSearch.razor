@@ -39,11 +39,6 @@
                         <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
                     </label>
                 </div>
-                <div class="row">
-                    <div class="col-sm-6">@Results.Items.Count/@Results.TotalResults</div>
-                    <div class="col-sm-6">Page @Results.Page</div>
-                </div>
-
                 <div id="accordion">
                     @foreach (var filter in SpecFilters)
                     {
@@ -78,6 +73,7 @@
     <div class="searchBody col-sm-9">
         @if (State == PageState.Results)
         {
+            var filteredResults = Results.Items.Where(Filter).OrderBy(SortFunc).ToList();
             <div class="row">
                 @foreach (var filter in Filters)
                 {
@@ -99,7 +95,11 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th>Name</th>
+                        <th>
+                            <div class="row">
+                                @(filteredResults.Count)/@(Results.Items.Count) Results
+                            </div>
+                        </th>
                         <th>Brand</th>
                         @foreach (var sort in CustomSort)
                         {
@@ -116,7 +116,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Results.Items.Where(Filter).OrderBy(SortFunc))
+                    @foreach (var item in filteredResults)
                     {
                         <tr class="search-item @(Selected == item ? "selected" : "")"
                             @onclick="@(() => {
