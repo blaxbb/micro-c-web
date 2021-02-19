@@ -339,7 +339,7 @@
                 {"orderBy",  "0"},
                 {"page", "0" }
             };
-            
+
             string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
             Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
             Console.WriteLine(Results);
@@ -397,7 +397,7 @@
 
         foreach (var field in specFields)
         {
-            var values = Results.Items.Where(i => i.Specs.ContainsKey(field)).Select(i => i.Specs[field]).Distinct().ToList();
+            var values = Results.Items.Where(i => i.Specs.ContainsKey(field)).SelectMany(i => i.Specs[field].Split('\n')).Distinct().ToList();
             if(values.Count != Results.Items.Count)
             {
                 SpecFilters.Add(field, values);
@@ -553,10 +553,13 @@
     private bool CheckFilter(string key, string value)
     {
         if (Filters.ContainsKey(key)
-            && Filters[key].Count > 0
-            && !Filters[key].Contains(value))
+            && Filters[key].Count > 0)
         {
-            return true;
+            if (value == null)
+            {
+                return !Filters[key].Contains(value);
+            }
+            return !Filters[key].Any(f => value.Contains(f));
         }
 
         return false;
