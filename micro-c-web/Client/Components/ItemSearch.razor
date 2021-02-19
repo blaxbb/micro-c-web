@@ -97,6 +97,7 @@
             <table class="table table-striped search-results-table">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Name</th>
                         <th>Brand</th>
                         @foreach (var sort in CustomSort)
@@ -124,6 +125,9 @@
                                          SubmitItem();
                                      }
                         })">
+                            <td>
+                                <img src="@item.PictureUrls.FirstOrDefault()" class="search-thumbnail mx-auto d-block" />
+                            </td>
                             <td>
                                 <div class="search-name">@item.Name</div>
                                 <div class="search-sku">@item.SKU</div>
@@ -192,15 +196,18 @@
         }
     </div>
 </div>
-<div class="item-search-footer">
-    @if (Selected != null)
-    {
+@if (Selected != null)
+{
+    <div class="item-search-footer">
+   
+        <button type="button" class="btn btn-primary">Info</button>
         @if (!string.IsNullOrWhiteSpace(ActionName))
         {
             <button type="button" class="btn btn-primary" @onclick="SubmitItem">@ActionName</button>
         }
-    }
-</div>
+    
+    </div>
+}
 
 
 

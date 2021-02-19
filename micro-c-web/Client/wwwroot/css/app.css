@@ -310,3 +310,18 @@ tr:hover .table-hover-column {
     max-height: 75px;
     max-width: 100%;
 }
+
+.search-thumbnail {
+    max-width: 64px;
+    max-height: 64px;
+}
+
+.modal-content .item-search-footer {
+    background-color: #303030;
+}
+
+.item-search-footer {
+    position: sticky;
+    bottom: 0px;
+    background-color: #222;
+}
