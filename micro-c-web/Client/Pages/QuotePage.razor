@@ -25,7 +25,8 @@ else
 {
     <div class="quote-table-header">
         <div class="row">
-            <input class="col-sm-9 form-control form-control-lg" type="text" placeholder="Name" @bind-value="Title" />
+            <input class="col-sm-9 form-control form-control-lg quote-title-control" type="text" placeholder="Name" @bind-value="Title" />
+            <h3 class="col-sm-9 quote-title-print">@Title</h3>
             <div class="col-sm-3">
                 <button class="btn btn-primary float-right" @onclick="DoSave">
                     <span class="material-icons">save</span>

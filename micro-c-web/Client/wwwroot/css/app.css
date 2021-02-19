@@ -49,9 +49,38 @@ a, .btn-link {
     top: 0.5rem;
 }
 
+.quote-title-control {
+    display: block;
+}
+
+.quote-title-print {
+    display: none;
+}
+
+
 @media print {
     .sidebar, .topr-row {
         display: none;
+    }
+
+    .alert-warning {
+        display: none;
+    }
+
+    .quote-table-header .btn {
+        display: none;
+    }
+
+    .quote-table .btn {
+        display: none;
+    }
+
+    .quote-title-control {
+        display: none;
+    }
+
+    .quote-title-print {
+        display: block;
     }
 }
 
