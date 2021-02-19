@@ -51,7 +51,7 @@
                                 <button class="btn btn-primary collapsed col-sm-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
                                     @filter.Key
                                 </button>
-                                <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))">
+                                <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))" data-toggle="tooltip" title="Toggle Column" data-boundary="window">
                                     <span class="material-icons">arrow_right</span>
                                 </button>
                             </div>
@@ -363,6 +363,7 @@
             Console.WriteLine(e.ToString());
         }
         this.StateHasChanged();
+        await js.InvokeVoidAsync("setupTooltips");
     }
 
     private void SetupSpecFilters()
