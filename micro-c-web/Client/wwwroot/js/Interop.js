@@ -1,5 +1,6 @@
 ﻿window.setupTooltips = function () {
     $(function () {
+        HideTooltips();
         $('[data-toggle="tooltip"]').tooltip();
     });
 }
