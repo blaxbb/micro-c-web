@@ -325,3 +325,7 @@ tr:hover .table-hover-column {
     bottom: 0px;
     background-color: #222;
 }
+
+.item-search-footer .btn {
+    margin: 0px 5px 0px 5px;
+}

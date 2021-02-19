@@ -199,8 +199,7 @@
 @if (Selected != null)
 {
     <div class="item-search-footer">
-   
-        <button type="button" class="btn btn-primary">Info</button>
+        <a href="//microcenter.com@(Selected.URL)" target="_blank" class="btn btn-primary" role="button">Info</a>
         @if (!string.IsNullOrWhiteSpace(ActionName))
         {
             <button type="button" class="btn btn-primary" @onclick="SubmitItem">@ActionName</button>
