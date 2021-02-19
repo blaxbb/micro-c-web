@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using micro_c_web.Server.Data;
 
 namespace micro_c_web.Server
@@ -14,6 +15,7 @@ namespace micro_c_web.Server
             _context = dbcontext;
         }
 
+        [Queue("cache")]
         public async Task ProcessAllCached()
         {
             foreach (var request in _context.CacheRequests.ToList())

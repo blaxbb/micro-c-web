@@ -146,7 +146,7 @@
         }
         else if (State == PageState.Initial)
         {
-            <div class="search-initial">
+            <div class="search-initial mt-3">
                 <div class="w-100 d-block">
                     <h4>Micro C App</h4>
 
@@ -177,14 +177,14 @@
         }
         else if (State == PageState.Loading)
         {
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center mt-3">
                 <strong>Loading...</strong>
                 <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
             </div>
         }
         else if (State == PageState.Error)
         {
-            <div class="alert alert-danger mt-3" role="alert">
+            <div class="alert alert-danger mt-3 mt-3" role="alert">
                 <h4 class="alert-heading">Error!</h4>
                 <p>@ErrorText</p>
                 @if (!string.IsNullOrWhiteSpace(ErrorQuery))
