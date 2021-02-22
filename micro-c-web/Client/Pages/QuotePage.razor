@@ -27,13 +27,17 @@ else
         <div class="row">
             <input class="col-sm-9 form-control form-control-lg quote-title-control" type="text" placeholder="Name" @bind-value="Title" />
             <h3 class="col-sm-9 quote-title-print">@Title</h3>
-            <div class="col-sm-3">
-                <button class="btn btn-primary float-right" @onclick="DoSave">
+            <div class="col-sm-3 quote-table-header-controls">
+                <button class="btn btn-primary" @onclick="DoSave">
                     <span class="material-icons">save</span>
                 </button>
-                <button class="btn btn-success float-right" @onclick="DoAdd">
+                <button class="btn btn-success" @onclick="DoAdd">
                     <span class="material-icons">add</span>
                 </button>
+                @if (ShortCode != 0)
+                {
+                    <h3 class="quote-shortcode my-auto">#@ShortCode</h3>
+                }
             </div>
         </div>
         @if (UnsavedChanges)
@@ -98,6 +102,7 @@ else
     public string itemId { get; set; }
 
     public string Title { get; set; }
+    public int ShortCode { get; set; }
 
     public bool UnsavedChanges { get; set; }
 
@@ -131,6 +136,7 @@ else
         {
             components = JsonSerializer.Deserialize<List<BuildComponent>>(flare.Data);
             Title = flare.Title;
+            ShortCode = flare.ShortCode;
 
             Console.WriteLine(JsonSerializer.Serialize(components.FirstOrDefault(), new JsonSerializerOptions()
             {
@@ -182,6 +188,7 @@ else
         var success = await flare.Post("https://dataflare.bbarrett.me/api/Flare");
         if (success)
         {
+            ShortCode = flare.ShortCode;
             UnsavedChanges = false;
             Nav.NavigateTo($"/quotes/{flare.ShortCode}");
         }

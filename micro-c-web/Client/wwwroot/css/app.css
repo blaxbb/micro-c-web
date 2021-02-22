@@ -57,6 +57,10 @@ a, .btn-link {
     display: none;
 }
 
+.quote-shortcode {
+    display: block;
+}
+
 
 @media print {
     .sidebar, .topr-row {
@@ -81,6 +85,10 @@ a, .btn-link {
 
     .quote-title-print {
         display: block;
+    }
+
+    .quote-shortcode {
+        display: none;
     }
 }
 
@@ -357,4 +365,9 @@ tr:hover .table-hover-column {
 
 .item-search-footer .btn {
     margin: 0px 5px 0px 5px;
+}
+
+.quote-table-header-controls {
+    display: flex;
+    flex-direction: row-reverse;
 }
