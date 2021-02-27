@@ -11,9 +11,16 @@
             <button class="btn btn-primary float-right" @onclick="OnInitializedAsync">
                 <span class="oi oi-reload"></span>
             </button>
-            <a class="btn btn-success float-right" href="/quotes/new">
-                <span class="oi oi-plus"></span>
-            </a>
+            <div class="btn-group float-right">
+                <a type="button" class="btn btn-success" href="/quotes/new"><span class="oi oi-plus"></span></a>
+                <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="/quotes/new">Quote</a>
+                    <a class="dropdown-item" href="#">Build</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -40,19 +47,29 @@
                     {
                         var flare = flares[i];
                         var quote = Quotes[i];
-                        <tr class="quote-list-item" @onclick="@(() => NavManager.NavigateTo($"/quotes/{flare.ShortCode}"))"
+                        <tr class="quote-list-item"
                             data-toggle="tooltip"
                             data-trigger="hover"
                             data-placement="left"
                             data-container=".quotes-page"
                             data-html="true"
-                            title="@(string.Join("&#13;", quote.Select(c => c.Item.Name)))">
+                            title="@(string.Join("&#13;", quote.Where(c => c.Item != null).Select(c => c.Item.Name)))">
                             <td scope="row">@flare.ShortCode</td>
                             <td>@flare.Title</td>
                             <td>@flare.Created</td>
                             <td>@quote.Count</td>
-                            <td>@quote.Sum(c => c.Item.Price * c.Item.Quantity).ToString("$0.00")</td>
-                            <td class="table-hover-column"><span class="material-icons">launch</span></td>
+                            <td>@quote.Where(c => c.Item != null).Sum(c => c.Item.Price * c.Item.Quantity).ToString("$0.00")</td>
+                            <td class="table-hover-column">
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Open
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="/quotes/@flare.ShortCode">Quote</a>
+                                        <a class="dropdown-item" href="/builds/@flare.ShortCode">Build</a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     }
                     @if (flares.Count == 0)

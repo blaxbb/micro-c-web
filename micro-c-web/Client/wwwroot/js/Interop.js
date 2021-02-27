@@ -69,3 +69,21 @@ window.Uncheck = function (id) {
 window.Collapse = function (selector) {
     $(selector).collapse('hide');
 }
+
+window.setupSearchKeybindings = function (search) {
+    document.addEventListener('keydown', (event) => {
+        switch (event.key) {
+            case "ArrowUp":
+                break;
+            case "ArrowDown":
+                break;
+        }
+    });
+}
+
+window.ScrollToElement = function (ele) {
+    if (ele != undefined) {
+        ele.scrollIntoView();
+        ele.focus();
+    }
+}

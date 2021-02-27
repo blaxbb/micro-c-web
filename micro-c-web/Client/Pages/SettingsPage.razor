@@ -235,7 +235,7 @@
 
     #region PRESETS
 
-    private static IEnumerable<ComponentType> PresetBYO()
+    public static IEnumerable<ComponentType> PresetBYO()
     {
         yield return BuildService;
         yield return ComponentType.OperatingSystem;
@@ -251,7 +251,7 @@
         yield return WaterCoolingKit;
         yield return CaseFan;
     }
-    private static IEnumerable<ComponentType> PresetSystems()
+    public static IEnumerable<ComponentType> PresetSystems()
     {
         yield return Desktop;
         yield return Laptop;
@@ -261,7 +261,7 @@
         yield return Printer;
     }
 
-    private static IEnumerable<ComponentType> PresetGS()
+    public static IEnumerable<ComponentType> PresetGS()
     {
         yield return WirelessRouter;
         yield return WiredRouter;
@@ -291,7 +291,7 @@
         yield return InkAndToner;
     }
 
-    private static IEnumerable<ComponentType> PresetCE()
+    public static IEnumerable<ComponentType> PresetCE()
     {
         yield return Television;
         yield return HomeTheaterAudio;

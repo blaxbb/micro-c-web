@@ -7,7 +7,7 @@
 
 <div class="row item-search-view" style="flex-direction:row;">
     <div class="sidebar col-sm-3 bg-dark">
-        <div class="sticky-top">
+        <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
                 <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
                 <div class="btn-group dropright search-sidebar-item">
@@ -73,7 +73,7 @@
     <div class="searchBody col-sm-9">
         @if (State == PageState.Results)
         {
-            var filteredResults = Results.Items.Where(Filter).OrderBy(SortFunc).ToList();
+            var filteredResults = FilteredResults.ToList();
             <div class="row">
                 @foreach (var filter in Filters)
                 {
@@ -116,16 +116,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in filteredResults)
+                    @for(int i = 0; i < filteredResults.Count; i++)
                     {
+                        var iFixBug = i;
+                        var item = filteredResults[i];
                         <tr class="search-item @(Selected == item ? "selected" : "")"
+                            tabindex="0"
+                            @ref="resultElements[iFixBug]"
                             @onclick="@(() => {
                                      Selected = item;
                                      if (string.IsNullOrWhiteSpace(ActionName))
                                      {
                                          SubmitItem();
-                                     }
-                        })">
+                                     }})"
+                            @onkeydown="@(async (args) =>{
+                                              switch (args.Key)
+                                              {
+                                                  case "ArrowUp":
+                                                      await SelectPrev();
+                                                      break;
+                                                  case "ArrowDown":
+                                                      await SelectNext();
+                                                      break;
+                                                  case "Tab":
+                                                      await SelectNext();
+                                                      break;
+                                                  case "Enter":
+                                                      SubmitItem();
+                                                      break;
+                                              }
+                                          })"
+                            @onkeydown:preventDefault ="true"
+                            @onkeydown:stopPropagation="true"
+                        >
                             <td>
                                 <img src="@item.PictureUrls.FirstOrDefault()" class="search-thumbnail mx-auto d-block" />
                             </td>
@@ -232,8 +255,9 @@
     public EventCallback<Item> Action { get; set; }
 
     public SearchResults Results { get; set; }
+    public IEnumerable<Item> FilteredResults => Results.Items.Where(Filter).OrderBy(SortFunc);
 
-    private string SearchQuery { get; set; }
+    public string SearchQuery { get; set; }
 
     private Item Selected { get; set; }
 
@@ -247,6 +271,8 @@
     private bool SortAscending;
 
     private List<string> CustomSort;
+
+    private ElementReference[] resultElements { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -309,7 +335,7 @@
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
     }
 
-    private async void SearchSubmit(string categoryFilter = "")
+    public async void SearchSubmit(string categoryFilter = "")
     {
         State = PageState.Loading;
         this.StateHasChanged();
@@ -342,6 +368,7 @@
 
             string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
             Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
+            resultElements = new ElementReference[Results.Items.Count];
             Console.WriteLine(Results);
             await ResetFilter();
 
@@ -353,8 +380,9 @@
                 "Stock"
             };
 
-            Selected = null;
             State = PageState.Results;
+            this.StateHasChanged();
+            await SelectNext();
         }
         catch(Exception e)
         {
@@ -576,8 +604,37 @@
             CustomSort.Add(sort);
             SetSort(sort);
         }
+    }
 
+    public async Task SelectNext()
+    {
+        var res = FilteredResults.ToList();
+        if(Selected == null)
+        {
+            Selected = res.FirstOrDefault();
+        }
+        var index = res.IndexOf(Selected);
+        if(index < res.Count - 1)
+        {
+            Selected = res[index + 1];
+            await js.InvokeVoidAsync("ScrollToElement", resultElements[index + 1]);
+        }
 
+    }
+
+    public async Task SelectPrev()
+    {
+        var res = FilteredResults.ToList();
+        if (Selected == null)
+        {
+            Selected = res.FirstOrDefault();
+        }
+        var index = res.IndexOf(Selected);
+        if (index > 0 && res.Count > 1)
+        {
+            Selected = res[index - 1];
+            await js.InvokeVoidAsync("ScrollToElement", resultElements[index - 1]);
+        }
     }
 
     private string CSSEscape(string s)

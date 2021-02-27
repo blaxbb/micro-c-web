@@ -1,0 +1,278 @@
+﻿@page "/builds/{itemId}"
+@using System.Text.Json;
+@using System.Linq;
+@using MicroCLib.Models;
+@using micro_c_web.Client.Components;
+
+@inject NavigationManager Nav;
+
+@inject IJSRuntime js;
+
+<Modal Id="editItemModal" Name="@(editModalComponent == null ? "" : editModalComponent.Item.Name)">
+    <EditItem @bind-Component="editModalComponent" ItemSaved=EditItemSaved ItemRemoved="EditItemRemoved" />
+</Modal>
+
+<div class="build-page">
+    @if (components == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <div class="quote-table-header">
+            <div class="row">
+                <input class="col-sm-9 form-control form-control-lg quote-title-control d-print-none" type="text" placeholder="Name" @bind-value="Title" />
+                <h3 class="col-sm-9 quote-title-print d-none d-print-block">@Title</h3>
+                <div class="col-sm-3 quote-table-header-controls">
+                    <button class="btn btn-primary" @onclick="DoSave">
+                        <span class="material-icons">save</span>
+                    </button>
+                    <button class="btn btn-success" @onclick="DoAdd">
+                        <span class="material-icons">add</span>
+                    </button>
+                    @if (ShortCode != 0)
+                    {
+                        <h3 class="quote-shortcode my-auto d-print-none">#@ShortCode</h3>
+                    }
+                </div>
+            </div>
+            @if (UnsavedChanges)
+            {
+                <div class="row alert alert-warning d-print-none">
+                    There are unsaved changes...
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-sm-3">
+                <ul class="list-group">
+                    @foreach (var comp in components)
+                    {
+                        if (comp.Item == null)
+                        {
+                            <li class="list-group-item">
+                                <input type="text"
+                                       class="form-control"
+                                       placeholder="@comp.Type"
+                                       @onclick="(() => selected = comp)"
+                                       @oninput="((args) => { itemSearch.SearchQuery = args.Value.ToString(); Console.WriteLine(args.Value); })"
+                                       @onkeyup="@((args) => { if (args.Key == "Enter") itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })" />
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="list-group-item build-item" @onclick="(() => EditItem(comp))">
+                                <div class="build-item row">
+                                    <div class="col-sm-2">
+                                        @if (comp.Item.PictureUrls.Count > 0)
+                                        {
+                                            <img class="my-auto build-item-image" src="@comp.Item.PictureUrls.FirstOrDefault()" />
+                                        }
+                                        <button class="btn btn-primary build-item-edit-button">Edit</button>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="mb-auto build-item-name">@comp.Item.Name</div>
+                                        <div class="mt-auto">@comp.Item.Brand</div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="mb-auto">@comp.Item.Price.ToString("$0.00")</div>
+                                        <div class="mt-auto">@comp.Item.SKU</div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="mb-auto">Qty @comp.Item.Quantity</div>
+                                        <div class="mt-auto">@comp.Item.Stock</div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    }
+                    <li class="list-group-item text-right">Subtotal: @(components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price).ToString("$#.00"))</li>
+                    <li class="list-group-item text-right">Tax (@($"{UserSettings.TaxRate * 100:0.0}")%): @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * UserSettings.TaxRate).ToString("$#.00"))</li>
+                    <li class="list-group-item text-right">Total: @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * (1 + UserSettings.TaxRate)).ToString("$#.00"))</li>
+                </ul>
+            </div>
+            <div class="col-sm-9 build-search-panel">
+                <ItemSearch @ref="itemSearch" Action=NewItemSaved ActionName="Add Item" />
+            </div>
+        </div>
+    }
+</div>
+
+
+@code
+{
+    [Parameter]
+    public string itemId { get; set; }
+
+    public string Title { get; set; }
+    public int ShortCode { get; set; }
+
+    public bool UnsavedChanges { get; set; }
+
+    private List<BuildComponent> components;
+    private BuildComponent selected;
+    private BuildComponent editModalComponent;
+
+    private float Subtotal;
+    private float Tax;
+    private float Total;
+
+    private Settings UserSettings;
+
+    private ItemSearch itemSearch;
+
+    private void ClickedItem(BuildComponent comp)
+    {
+        Console.WriteLine(comp.Item.Name);
+        js.InvokeAsync<object>("open", $"https://microcenter.com/{comp.Item.URL}", "_blank");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserSettings = await Settings.Get(js);
+        UnsavedChanges = false;
+        DataFlareClient.Flare? flare = null;
+
+        components = new List<BuildComponent>();
+
+        var byoTypes = SettingsPage.PresetBYO();
+        foreach(var type in byoTypes)
+        {
+            components.Add(new BuildComponent()
+            {
+                Type = type
+            });
+        }
+
+        components.Add(new BuildComponent()
+        {
+            Type = BuildComponent.ComponentType.Miscellaneous
+        });
+
+
+        if (itemId != "new")
+        {
+            flare = await DataFlareClient.Flare.GetShortCode("https://dataflare.bbarrett.me/api/Flare", itemId);
+        }
+
+        if (flare != null && !string.IsNullOrWhiteSpace(flare.Data))
+        {
+            var fromQuote = JsonSerializer.Deserialize<List<BuildComponent>>(flare.Data);
+            Title = flare.Title;
+            ShortCode = flare.ShortCode;
+            foreach(var comp in fromQuote.Where(c => c.Item != null))
+            {
+                InsertComponent(comp);
+            }
+
+            Console.WriteLine(JsonSerializer.Serialize(fromQuote.FirstOrDefault(), new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            }));
+        }
+    }
+
+    private void InsertComponent(BuildComponent component)
+    {
+        if (component.Item != null)
+        {
+            var checkType = component.Type == BuildComponent.ComponentType.None ? component.Item.ComponentType : component.Type;
+            var index = components.FindLastIndex(c => c.Type == checkType);
+            if (index >= 0)
+            {
+                if (components[index].Item == null)
+                {
+                    components[index] = component;
+                    components.Insert(index + 1, new BuildComponent()
+                    {
+                        Type = checkType
+                    });
+                    return;
+                }
+                else
+                {
+                    component.Type = checkType;
+                    components.Insert(index + 1, component);
+                    return;
+                }
+            }
+        }
+
+        components.Add(component);
+    }
+
+    private async void EditItem(BuildComponent comp)
+    {
+        selected = comp;
+        var json = JsonSerializer.Serialize(comp);
+        var dupe = JsonSerializer.Deserialize<BuildComponent>(json);
+        editModalComponent = dupe;
+        await js.InvokeVoidAsync("ShowModal", "#editItemModal");
+    }
+
+    private void EditItemSaved(BuildComponent comp)
+    {
+        if(selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price)
+        {
+            UnsavedChanges = true;
+        }
+
+        selected.Item.Quantity = comp.Item.Quantity;
+        selected.Item.Price = comp.Item.Price;
+        StateHasChanged();
+    }
+
+    private async void DoSave()
+    {
+        var currentStore = UserSettings.Store;
+
+        if (string.IsNullOrWhiteSpace(currentStore))
+        {
+            Console.WriteLine("Error: Store not defined.");
+            return;
+        }
+
+        var json = JsonSerializer.Serialize(components.Where(c => c.Item != null));
+        var flare = new DataFlareClient.Flare(json);
+        flare.Tag = $"micro-c-{currentStore}";
+        flare.Title = Title;
+
+        var success = await flare.Post("https://dataflare.bbarrett.me/api/Flare");
+        if (success)
+        {
+            ShortCode = flare.ShortCode;
+            UnsavedChanges = false;
+            Nav.NavigateTo($"/builds/{flare.ShortCode}");
+        }
+    }
+
+    private async void DoAdd()
+    {
+        await js.InvokeVoidAsync("ShowModal", "#addItemModal");
+    }
+
+    private async void NewItemSaved(Item item)
+    {
+        UnsavedChanges = true;
+        if(selected != null)
+        {
+            selected.Item = item;
+            if(!components.Any(c => c.Item == null && c.Type == selected.Type))
+            {
+                var index = components.FindLastIndex(c => c.Type == selected.Type);
+                components.Insert(index + 1, new BuildComponent()
+                {
+                    Type = selected.Type
+                });
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void EditItemRemoved()
+    {
+        UnsavedChanges = true;
+        components.Remove(selected);
+        StateHasChanged();
+    }
+}

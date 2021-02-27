@@ -49,25 +49,8 @@ a, .btn-link {
     top: 0.5rem;
 }
 
-.quote-title-control {
-    display: block;
-}
-
-.quote-title-print {
-    display: none;
-}
-
-.quote-shortcode {
-    display: block;
-}
-
-
 @media print {
     .sidebar, .topr-row {
-        display: none;
-    }
-
-    .alert-warning {
         display: none;
     }
 
@@ -76,18 +59,6 @@ a, .btn-link {
     }
 
     .quote-table .btn {
-        display: none;
-    }
-
-    .quote-title-control {
-        display: none;
-    }
-
-    .quote-title-print {
-        display: block;
-    }
-
-    .quote-shortcode {
         display: none;
     }
 }
@@ -370,4 +341,62 @@ tr:hover .table-hover-column {
 .quote-table-header-controls {
     display: flex;
     flex-direction: row-reverse;
+}
+
+.build-search-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.build-search-panel .item-search-view {
+    flex: 1;
+}
+
+.build-search-panel .item-search-footer {
+    flex: 1;
+}
+
+.build-item img {
+    max-height: 64px;
+}
+
+.build-item .col-sm-2, .build-item .col-sm-6 {
+    display: flex;
+    flex-direction: column;
+}
+
+.build-item-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 3rem;
+}
+
+.build-page .sidebar {
+    position: relative;
+    max-height: none;
+    overflow-y: auto;
+}
+
+.build-item-image {
+    display: block;
+}
+
+.build-item:hover .build-item-image {
+    display: none;
+}
+
+.build-item-edit-button {
+    display: none;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.build-item:hover .build-item-edit-button {
+    display: block;
+}
+
+.build-page .search-form {
+    display: none;
 }
