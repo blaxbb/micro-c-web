@@ -84,6 +84,11 @@ window.setupSearchKeybindings = function (search) {
 window.ScrollToElement = function (ele) {
     if (ele != undefined) {
         ele.scrollIntoView();
+    }
+}
+
+window.FocusElement = function (ele) {
+    if (ele != undefined) {
         ele.focus();
     }
 }

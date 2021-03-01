@@ -6,7 +6,7 @@
 
 
 <div class="row item-search-view" style="flex-direction:row;">
-    <div class="sidebar col-sm-3 bg-dark">
+    <div class="sidebar col-sm-4 bg-dark">
         <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
                 <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
@@ -70,7 +70,7 @@
             }
         </div>
     </div>
-    <div class="searchBody col-sm-9">
+    <div class="searchBody col-sm-8">
         @if (State == PageState.Results)
         {
             var filteredResults = FilteredResults.ToList();
@@ -116,7 +116,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for(int i = 0; i < filteredResults.Count; i++)
+                    @for (int i = 0; i < filteredResults.Count; i++)
                     {
                         var iFixBug = i;
                         var item = filteredResults[i];
@@ -124,11 +124,15 @@
                             tabindex="0"
                             @ref="resultElements[iFixBug]"
                             @onclick="@(() => {
-                                     Selected = item;
-                                     if (string.IsNullOrWhiteSpace(ActionName))
-                                     {
-                                         SubmitItem();
-                                     }})"
+                                            Selected = item;
+                                            if (string.IsNullOrWhiteSpace(ActionName))
+                                            {
+                                                SubmitItem();
+                                            } })"
+                            @ondblclick="(() => {
+                                             Selected = item;
+                                             SubmitItem();
+                                         })"
                             @onkeydown="@(async (args) =>{
                                               switch (args.Key)
                                               {
@@ -156,12 +160,14 @@
                                 <div class="search-name">@item.Name</div>
                                 <div class="search-sku">@item.SKU</div>
                             </td>
-                            <td>
+                            <td class="align-middle">
                                 @item.Brand
                             </td>
                             @foreach (var sort in CustomSort)
                             {
-                                <td>@(item.Specs.ContainsKey(sort) ? item.Specs[sort] : "")</td>
+                                <td class="align-middle">
+                                    @(item.Specs.ContainsKey(sort) ? item.Specs[sort] : "")
+                                </td>
                             }
                         </tr>
                     }
@@ -619,7 +625,6 @@
             Selected = res[index + 1];
             await js.InvokeVoidAsync("ScrollToElement", resultElements[index + 1]);
         }
-
     }
 
     public async Task SelectPrev()

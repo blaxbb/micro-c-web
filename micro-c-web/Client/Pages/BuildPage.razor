@@ -44,7 +44,7 @@
             }
         </div>
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <ul class="list-group">
                     @foreach (var comp in components)
                     {
@@ -54,7 +54,7 @@
                                 <input type="text"
                                        class="form-control"
                                        placeholder="@comp.Type"
-                                       @onclick="(() => selected = comp)"
+                                       @onclick="(() => { selected = comp; itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })"
                                        @oninput="((args) => { itemSearch.SearchQuery = args.Value.ToString(); Console.WriteLine(args.Value); })"
                                        @onkeyup="@((args) => { if (args.Key == "Enter") itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })" />
                             </li>
@@ -63,7 +63,7 @@
                         {
                             <li class="list-group-item build-item" @onclick="(() => EditItem(comp))">
                                 <div class="build-item row">
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-2 p-0">
                                         @if (comp.Item.PictureUrls.Count > 0)
                                         {
                                             <img class="my-auto build-item-image" src="@comp.Item.PictureUrls.FirstOrDefault()" />
@@ -79,8 +79,8 @@
                                         <div class="mt-auto">@comp.Item.SKU</div>
                                     </div>
                                     <div class="col-sm-2">
-                                        <div class="mb-auto">Qty @comp.Item.Quantity</div>
-                                        <div class="mt-auto">@comp.Item.Stock</div>
+                                        <div class="mb-auto text-right">Qty @comp.Item.Quantity</div>
+                                        <div class="mt-auto text-right">@comp.Item.Stock</div>
                                     </div>
                                 </div>
                             </li>
@@ -91,7 +91,7 @@
                     <li class="list-group-item text-right">Total: @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * (1 + UserSettings.TaxRate)).ToString("$#.00"))</li>
                 </ul>
             </div>
-            <div class="col-sm-9 build-search-panel">
+            <div class="col-sm-8 build-search-panel">
                 <ItemSearch @ref="itemSearch" Action=NewItemSaved ActionName="Add Item" />
             </div>
         </div>
