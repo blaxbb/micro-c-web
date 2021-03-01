@@ -321,7 +321,7 @@
             foreach (var result in errors)
             {
                 var matchingComp = components.FirstOrDefault(comp => comp.Item == result.Primary);
-                matchingComp.ErrorText += result.Text.Replace("\n", ", ") + "\n\n";
+                matchingComp.ErrorText += result.Text.Replace("\n", ", ") + "\n";
             }
 
             foreach (var comp in components)
@@ -334,7 +334,7 @@
                 var hint = dep.HintText(items, comp.Type);
                 if (!string.IsNullOrWhiteSpace(hint))
                 {
-                    comp.HintText += hint.Replace("\n", ", ") + "\n\n";
+                    comp.HintText += hint.Replace("\n", ", ") + "\n";
                 }
             }
         }
