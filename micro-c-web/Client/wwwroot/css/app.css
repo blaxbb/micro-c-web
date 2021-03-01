@@ -326,6 +326,7 @@ tr:hover .table-hover-column {
 
 .modal-content .item-search-footer {
     background-color: #303030;
+    z-index: 20;
 }
 
 .item-search-footer {
@@ -354,6 +355,10 @@ tr:hover .table-hover-column {
 
 .build-search-panel .item-search-footer {
     flex: 1;
+}
+
+.build-item .alert {
+    margin-top: 1rem;
 }
 
 .build-item img {

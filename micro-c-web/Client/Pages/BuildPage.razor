@@ -50,19 +50,28 @@
                     {
                         if (comp.Item == null)
                         {
-                            <li class="list-group-item">
+                            <li class="list-group-item build-item">
                                 <input type="text"
                                        class="form-control"
                                        placeholder="@comp.Type"
                                        @onclick="(() => { selected = comp; itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })"
                                        @oninput="((args) => { itemSearch.SearchQuery = args.Value.ToString(); Console.WriteLine(args.Value); })"
                                        @onkeyup="@((args) => { if (args.Key == "Enter") itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })" />
+                                @if (!string.IsNullOrWhiteSpace(comp.HintText))
+                                {
+                                    foreach(var line in comp.HintText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                    {
+                                        <div class="alert alert-info build-hint">
+                                            @line
+                                        </div>
+                                    }
+                                }
                             </li>
                         }
                         else
                         {
                             <li class="list-group-item build-item" @onclick="(() => EditItem(comp))">
-                                <div class="build-item row">
+                                <div class="row">
                                     <div class="col-sm-2 p-0">
                                         @if (comp.Item.PictureUrls.Count > 0)
                                         {
@@ -83,6 +92,15 @@
                                         <div class="mt-auto text-right">@comp.Item.Stock</div>
                                     </div>
                                 </div>
+                                @if (!string.IsNullOrWhiteSpace(comp.ErrorText))
+                                {
+                                    foreach(var line in comp.ErrorText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                    {
+                                        <div class="alert alert-warning build-hint">
+                                            @line
+                                        </div>
+                                    }
+                                }
                             </li>
                         }
                     }
@@ -170,6 +188,12 @@
                 WriteIndented = true
             }));
         }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        UpdateHintsAndErrors();
     }
 
     private void InsertComponent(BuildComponent component)
@@ -266,6 +290,7 @@
                 });
             }
         }
+        UpdateHintsAndErrors();
         StateHasChanged();
     }
 
@@ -274,5 +299,44 @@
         UnsavedChanges = true;
         components.Remove(selected);
         StateHasChanged();
+    }
+
+    private void UpdateHintsAndErrors()
+    {
+        if(components == null)
+        {
+            return;
+        }
+
+        foreach (var comp in components)
+        {
+            comp.ErrorText = "";
+            comp.HintText = "";
+        }
+
+        foreach (var dep in BuildComponentDependency.Dependencies)
+        {
+            var items = components.Where(comp => comp.Item != null).Select(comp => comp.Item).ToList();
+            var errors = dep.HasErrors(items);
+            foreach (var result in errors)
+            {
+                var matchingComp = components.FirstOrDefault(comp => comp.Item == result.Primary);
+                matchingComp.ErrorText += result.Text.Replace("\n", ", ") + "\n\n";
+            }
+
+            foreach (var comp in components)
+            {
+                if (comp.Item != null)
+                {
+                    continue;
+                }
+
+                var hint = dep.HintText(items, comp.Type);
+                if (!string.IsNullOrWhiteSpace(hint))
+                {
+                    comp.HintText += hint.Replace("\n", ", ") + "\n\n";
+                }
+            }
+        }
     }
 }
