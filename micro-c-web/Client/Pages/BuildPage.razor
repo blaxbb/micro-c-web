@@ -72,7 +72,7 @@
                         {
                             <li class="list-group-item build-item" @onclick="(() => EditItem(comp))">
                                 <div class="row">
-                                    <div class="col-sm-2 p-0">
+                                    <div class="col-sm-2 d-none d-xl-flex p-0">
                                         @if (comp.Item.PictureUrls.Count > 0)
                                         {
                                             <img class="m-auto build-item-image" src="@comp.Item.PictureUrls.FirstOrDefault()" />
@@ -87,7 +87,7 @@
                                         <div class="mb-auto">@comp.Item.Price.ToString("$0.00")</div>
                                         <div class="mt-auto">@comp.Item.SKU</div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm">
                                         <div class="mb-auto text-right">Qty @comp.Item.Quantity</div>
                                         <div class="mt-auto text-right">@comp.Item.Stock</div>
                                     </div>
@@ -237,7 +237,7 @@
             {
                 InsertComponent(comp);
             }
-
+            UpdateHintsAndErrors();
             Console.WriteLine(JsonSerializer.Serialize(fromQuote.FirstOrDefault(), new JsonSerializerOptions()
             {
                 WriteIndented = true

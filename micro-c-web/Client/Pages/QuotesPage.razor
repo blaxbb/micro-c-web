@@ -45,7 +45,7 @@
                         var quote = Quotes[i];
                         <tr class="quote-list-item"
                             data-toggle="tooltip"
-                            data-placement="left"
+                            data-placement="bottom"
                             data-container=".quotes-page"
                             data-html="true"
                             title="@(string.Join("&#13;", quote.Where(c => c.Item != null).Select(c => c.Item.Name)))">

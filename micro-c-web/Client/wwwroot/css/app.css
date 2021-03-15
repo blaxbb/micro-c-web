@@ -365,7 +365,7 @@ tr:hover .table-hover-column {
     max-height: 64px;
 }
 
-.build-item .col-sm-2, .build-item .col-sm-6 {
+.build-item .col-sm-2, .build-item .col-sm-6, .build-item .col-sm {
     display: flex;
     flex-direction: column;
 }
