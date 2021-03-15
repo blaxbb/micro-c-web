@@ -1,5 +1,6 @@
 ﻿@using MicroCLib.Models;
 @using System.Text.RegularExpressions; 
+@using micro_c_web.Client.Pages;
 
 @inject HttpClient Http
 @inject IJSRuntime js
@@ -12,19 +13,57 @@
                 <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
                 <div class="btn-group dropright search-sidebar-item">
                     <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
-                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="collapse" data-target="#categoryCollapse" aria-controls="categoryCollapse" aria-expanded="false">
                         <span class="sr-only">Categories</span>
                     </button>
-                    <div class="dropdown-menu">
-                        @if (UserSettings != null)
+                </div>
+                <div class="collapse @(Results == null ? "show" : "")" id="categoryCollapse">
+                    @if (UserSettings != null)
+                    {
+                        @foreach (BuildComponent.ComponentType type in UserSettings.Categories)
                         {
-                            @foreach (BuildComponent.ComponentType type in UserSettings.Categories)
-                            {
-                                <a class="dropdown-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
-                                    @Enum.GetName(typeof(BuildComponent.ComponentType), type)
-                                </a>
-                            }
+                            <button type="button" class="btn btn-primary search-sidebar-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                            </button>
                         }
+                    }
+                    <button type="button" class="btn btn-primary search-sidebar-item" data-toggle="collapse" data-target="#otherCategoryCollapse">
+                        Other
+                    </button>
+                    <div class="collapse w-75 ml-auto" id="otherCategoryCollapse">
+                        <button type="button" class="btn btn-primary search-sidebar-item" data-toggle="collapse" data-target="#byoCategoryCollapse">
+                            BYO
+                        </button>
+                        <div class="collapse w-75 ml-auto" id="byoCategoryCollapse">
+                            @foreach (BuildComponent.ComponentType type in SettingsPage.PresetBYO())
+                            {
+                                <button type="button" class="btn btn-primary search-sidebar-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                    @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                                </button>
+                            }
+                        </div>
+                        <button type="button" class="btn btn-primary search-sidebar-item" data-toggle="collapse" data-target="#gsCategoryCollapse">
+                            General Sales
+                        </button>
+                        <div class="collapse w-75 ml-auto" id="gsCategoryCollapse">
+                            @foreach (BuildComponent.ComponentType type in SettingsPage.PresetGS())
+                            {
+                                <button type="button" class="btn btn-primary search-sidebar-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                    @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                                </button>
+                            }
+                        </div>
+                        <button type="button" class="btn btn-primary search-sidebar-item" data-toggle="collapse" data-target="#sysCategoryCollapse">
+                            Systems
+                        </button>
+                        <div class="collapse w-75 ml-auto" id="sysCategoryCollapse">
+                            @foreach (BuildComponent.ComponentType type in SettingsPage.PresetSystems())
+                            {
+                                <button type="button" class="btn btn-primary search-sidebar-item" @onclick="@(() => SearchSubmit(BuildComponent.CategoryFilterForType(type)))">
+                                    @Enum.GetName(typeof(BuildComponent.ComponentType), type)
+                                </button>
+                            }
+                        </div>
                     </div>
                 </div>
             </form>

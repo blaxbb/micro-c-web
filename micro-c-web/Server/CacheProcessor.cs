@@ -43,9 +43,9 @@ namespace micro_c_web.Server
                 };
                 _context.Add(entry);
                 _context.Remove(request);
+                await _context.SaveChangesAsync();
                 await Task.Delay(100);
             }
-            await _context.SaveChangesAsync();
         }
 
     }
