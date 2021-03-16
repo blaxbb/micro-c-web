@@ -10,6 +10,7 @@ namespace micro_c_web.Server.Models
     public class ItemCacheEntry
     {
         public long Id { get; set; }
+        public string Url { get; set; }
         public DateTime Created { get; set; }
         public string SKU { get; set; }
         public ComponentType ProductType { get; set; }

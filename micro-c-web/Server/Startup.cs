@@ -88,6 +88,11 @@ namespace micro_c_web.Server
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            Hangfire.BackgroundJob.Enqueue<CacheProcessor>(proc => proc.PrimeStaleItems());
+
+            RecurringJob.AddOrUpdate<CacheProcessor>("prime-cache", proc => proc.PrimeStaleItems(), Cron.Hourly(25), queue: "cache");
+            RecurringJob.AddOrUpdate<CacheProcessor>("pump-cache", proc => proc.ProcessAllCached(), Cron.Hourly(40), queue: "cache");
+
 
             //app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();

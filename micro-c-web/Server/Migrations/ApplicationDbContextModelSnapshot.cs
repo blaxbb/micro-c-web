@@ -41,6 +41,9 @@ namespace micro_c_web.Server.Migrations
                     b.Property<string>("Specs")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("ItemCache");

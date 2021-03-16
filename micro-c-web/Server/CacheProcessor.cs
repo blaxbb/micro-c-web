@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
 using micro_c_web.Server.Data;
+using micro_c_web.Server.Models;
 
 namespace micro_c_web.Server
 {
@@ -18,6 +19,8 @@ namespace micro_c_web.Server
         [Queue("cache")]
         public async Task ProcessAllCached()
         {
+            Console.WriteLine("!!!PROCESSING CACHE!!!");
+            await PruneCacheRequests();
             foreach (var request in _context.CacheRequests.ToList())
             {
                 var item = await MicroCLib.Models.Item.FromUrl(request.Url, "141");
@@ -34,18 +37,66 @@ namespace micro_c_web.Server
                     _context.Remove(existing);
                 }
 
-                var entry = new micro_c_web.Server.Models.ItemCacheEntry()
+                var entry = new ItemCacheEntry()
                 {
                     Created = DateTime.Now,
                     ProductType = item.ComponentType,
                     SKU = item.SKU,
                     Specs = item.Specs,
-                    PictureUrls = item.PictureUrls
+                    PictureUrls = item.PictureUrls,
+                    Url = item.URL
                 };
                 _context.Add(entry);
                 _context.Remove(request);
                 await _context.SaveChangesAsync();
                 await Task.Delay(100);
+            }
+        }
+
+        public async Task PrimeStaleItems()
+        {
+            Console.WriteLine("!!!STALE CHECKING CACHE!!!");
+            int staleCount = 0;
+            foreach(var cache in _context.ItemCache.ToList().Where(i => DateTime.Now - i.Created > TimeSpan.FromDays(1)))
+            {
+                if (string.IsNullOrWhiteSpace(cache.Url))
+                {
+                    Console.WriteLine($"{cache.SKU} is missing Url, removing");
+                    _context.Remove(cache);
+                }
+                else
+                {
+                    Console.WriteLine($"{cache.SKU} is STALE, PRIMING");
+                    var request = new ItemCacheRequest()
+                    {
+                        Url = cache.Url
+                    };
+                    _context.Add(request);
+                    staleCount++;
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            if(staleCount > 0)
+            {
+                Hangfire.BackgroundJob.Enqueue<CacheProcessor>(proc => proc.ProcessAllCached());
+            }
+        }
+
+        private async Task PruneCacheRequests()
+        {
+            foreach(var requests in _context.CacheRequests.ToList().GroupBy(r => r.Url))
+            {
+                var count = requests.Count();
+                if(count > 1)
+                {
+                    for(int i = 0; i < count - 1; i++)
+                    {
+                        _context.Remove(requests.ElementAt(i));
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
             }
         }
 

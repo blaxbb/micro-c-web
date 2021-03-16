@@ -193,7 +193,10 @@
                             @onkeydown:stopPropagation="true"
                         >
                             <td class="align-middle">
-                                <img src="@item.PictureUrls.FirstOrDefault()" class="search-thumbnail mx-auto d-block" />
+                                @if (item.PictureUrls != null && item.PictureUrls.Count > 0)
+                                {
+                                    <img src="@item.PictureUrls.FirstOrDefault()" class="search-thumbnail mx-auto d-block" />
+                                }
                             </td>
                             <td>
                                 <div class="search-name">@item.Name</div>
@@ -263,7 +266,7 @@
                 }
             </div>
         }
-        else if (State == PageState.Detail)
+        else if (State == PageState.Detail && Selected != null)
         {
             <ItemDetails @bind-item="Selected"/>
         }
@@ -418,9 +421,8 @@
             string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
             Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
             resultElements = new ElementReference[Results.Items.Count];
-            Console.WriteLine(Results);
-            await ResetFilter();
 
+            await ResetFilter();
             SetupSpecFilters();
 
             CustomSort = new List<string>()
