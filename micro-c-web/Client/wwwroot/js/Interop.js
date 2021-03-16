@@ -82,13 +82,13 @@ window.setupSearchKeybindings = function (search) {
 }
 
 window.ScrollToElement = function (ele) {
-    if (ele != undefined) {
+    if (ele.scrollIntoView) {
         ele.scrollIntoView();
     }
 }
 
 window.FocusElement = function (ele) {
-    if (ele != undefined) {
+    if (ele.scrollIntoView) {
         ele.focus();
     }
 }

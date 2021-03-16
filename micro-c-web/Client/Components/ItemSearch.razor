@@ -263,6 +263,10 @@
                 }
             </div>
         }
+        else if (State == PageState.Detail)
+        {
+            <ItemDetails @bind-item="Selected"/>
+        }
     </div>
 </div>
 @if (Selected != null)
@@ -273,7 +277,6 @@
         {
             <button type="button" class="btn btn-primary" @onclick="SubmitItem">@ActionName</button>
         }
-    
     </div>
 }
 
@@ -286,7 +289,8 @@
         Initial,
         Loading,
         Results,
-        Error
+        Error,
+        Detail
     }
     PageState State;
     string ErrorText;
@@ -424,8 +428,15 @@
                 "Price",
                 "Stock"
             };
+            if(Results.Items.Count == 1)
+            {
+                State = PageState.Detail;
+            }
+            else
+            {
+                State = PageState.Results;
+            }
 
-            State = PageState.Results;
             this.StateHasChanged();
             await SelectNext();
         }

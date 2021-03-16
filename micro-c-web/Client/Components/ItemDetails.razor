@@ -1,0 +1,86 @@
+﻿@using MicroCLib.Models;
+
+@if (item != null)
+{
+    <div class="container">
+        <h3>@item.Name</h3>
+        <div class="row">
+            @if (item.PictureUrls.Count > 0)
+            {
+                <div class="col-sm-6 d-flex justify-content-center flex-column">
+                    <img src="@item.PictureUrls[PictureIndex]" />
+                    <div class="row">
+                        <button type="button" class="btn btn-primary m-auto col-sm-3" @onclick="(() => PrevPicture())">&lt;</button>
+                        <button type="button" class="btn btn-primary m-auto col-sm-3" @onclick="(() => NextPicture())">&gt;</button>
+                    </div>
+                </div>
+            }
+            <div class="col-sm-6">
+                <div class="card">
+                    <ul class="list-group">
+                        <li class="list-group-item">@item.OriginalPrice</li>
+                        <li class="list-group-item">@item.Price</li>
+                        <li class="list-group-item">@item.Stock in stock</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table table-striped">
+                @foreach(var spec in item.Specs)
+                {
+                    <tr>
+                        <td>@spec.Key</td>
+                        <td>@spec.Value.Replace("\n", "NL")</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+}
+@code {
+    private Item _item;
+    [Parameter]
+    public Item item { get => _item; set { _item = value; PictureIndex = 0; } }
+    [Parameter]
+    public EventCallback<Item> itemChanged { get; set; }
+
+    private int PictureIndex { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    public void NextPicture()
+    {
+        if(PictureIndex < item.PictureUrls.Count - 2)
+        {
+            PictureIndex++;
+        }
+        else
+        {
+            PictureIndex = 0;
+        }
+        Console.WriteLine($"{PictureIndex} - {item.PictureUrls.Count}");
+        StateHasChanged();
+    }
+
+    public void PrevPicture()
+    {
+        if(PictureIndex > 1)
+        {
+            PictureIndex--;
+        }
+        else if(item.PictureUrls.Count > 0)
+        {
+            PictureIndex = item.PictureUrls.Count - 1;
+        }
+        else
+        {
+            PictureIndex = 0;
+        }
+        Console.WriteLine($"{PictureIndex} - {item.PictureUrls.Count}");
+        StateHasChanged();
+    }
+}
