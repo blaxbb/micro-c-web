@@ -27,7 +27,7 @@
         </div>
         <div class="row">
             <table class="table table-striped">
-                @foreach(var spec in item.Specs)
+                @foreach(var spec in item.Specs.Take(item.Specs.Count - 3))
                 {
                     <tr>
                         <td>@spec.Key</td>

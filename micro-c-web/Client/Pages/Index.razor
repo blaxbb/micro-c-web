@@ -1,11 +1,13 @@
 ﻿@page "/"
 <div class="searchPage">
-    <micro_c_web.Client.Components.ItemSearch Action="NavigateItem" />
+    <micro_c_web.Client.Components.ItemSearch Action="NavigateItem" ActionName="Details" @ref="search" />
 </div>
 
 @code {
+    ItemSearch search;
     private void NavigateItem(MicroCLib.Models.Item item)
     {
+        search.GotoDetailView();
         Console.WriteLine(item.Name);
     }
 }

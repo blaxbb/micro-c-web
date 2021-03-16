@@ -696,4 +696,9 @@
     {
         return Regex.Replace(s, "[\\s\\.()\\/\"']", "_");
     }
+
+    public void GotoDetailView()
+    {
+        State = PageState.Detail;
+    }
 }
