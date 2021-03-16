@@ -39,7 +39,8 @@ namespace micro_c_web.Server
                     Created = DateTime.Now,
                     ProductType = item.ComponentType,
                     SKU = item.SKU,
-                    Specs = item.Specs
+                    Specs = item.Specs,
+                    PictureUrls = item.PictureUrls
                 };
                 _context.Add(entry);
                 _context.Remove(request);

@@ -53,6 +53,7 @@ namespace micro_c_web.Server.Controllers
                 {
                     res.Specs = cache.Specs;
                     res.ComponentType = cache.ProductType;
+                    res.PictureUrls = cache.PictureUrls;
                 }
                 else if(!string.IsNullOrWhiteSpace(res.Brand))
                 {

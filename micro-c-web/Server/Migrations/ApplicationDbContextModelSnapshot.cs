@@ -29,6 +29,9 @@ namespace micro_c_web.Server.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PictureUrls")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ProductType")
                         .HasColumnType("int");
 

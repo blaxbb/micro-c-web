@@ -27,6 +27,12 @@ namespace micro_c_web.Server.Data
                     v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, null)
                 );
 
+            builder.Entity<ItemCacheEntry>().Property(i => i.PictureUrls)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, null)
+                );
+
             base.OnModelCreating(builder);
         }
     }

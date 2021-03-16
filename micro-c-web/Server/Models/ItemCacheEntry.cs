@@ -14,5 +14,6 @@ namespace micro_c_web.Server.Models
         public string SKU { get; set; }
         public ComponentType ProductType { get; set; }
         public Dictionary<string, string> Specs { get; set; }
+        public List<string> PictureUrls { get; set; }
     }
 }
