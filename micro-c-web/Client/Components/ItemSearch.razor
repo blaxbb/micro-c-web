@@ -207,9 +207,19 @@
                             </td>
                             @foreach (var sort in CustomSort)
                             {
-                                <td class="align-middle">
-                                    @(item.Specs.ContainsKey(sort) ? item.Specs[sort] : "")
-                                </td>
+                                if (sort == "Stock" && item.ClearanceItems.Count > 0)
+                                {
+                                    <td class="align-middle">
+                                        <div class="my-auto">@item.Stock New</div>
+                                        <div class="my-auto">@item.ClearanceItems.Count Open Box</div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="align-middle">
+                                        @(item.Specs.ContainsKey(sort) ? item.Specs[sort] : "")
+                                    </td>
+                                }
                             }
                         </tr>
                     }

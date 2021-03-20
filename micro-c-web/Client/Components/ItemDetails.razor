@@ -1,5 +1,8 @@
 ﻿@using MicroCLib.Models;
 
+@inject IJSRuntime js;
+@inject HttpClient Http
+
 @if (item != null)
 {
     <div class="container">
@@ -23,11 +26,25 @@
                         <li class="list-group-item">@item.Stock in stock</li>
                     </ul>
                 </div>
+                @if (item.ClearanceItems.Any(c => !string.IsNullOrEmpty(c.State)))
+                {
+                    <div class="card">
+                        <table class="table table-striped list-group">
+                            @foreach (var clearance in item.ClearanceItems)
+                            {
+                                <tr class="list-group-item d-table-row p-0">
+                                    <td class="align-middle">@clearance.Price</td>
+                                    <td>@clearance.State</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                }
             </div>
         </div>
         <div class="row">
             <table class="table table-striped">
-                @foreach(var spec in item.Specs.Take(item.Specs.Count - 3))
+                @foreach (var spec in item.Specs.Take(item.Specs.Count - 3))
                 {
                     <tr>
                         <td>@spec.Key</td>
@@ -46,15 +63,24 @@
     public EventCallback<Item> itemChanged { get; set; }
 
     private int PictureIndex { get; set; }
+    Settings UserSettings;
 
     protected override Task OnInitializedAsync()
     {
+        Task.Run(async () =>
+        {
+            UserSettings = await Settings.Get(js);
+            var fresh = await Http.GetFromJsonAsync<Item>($"MicroCenterProxy/get?url={item.URL}&storeId={UserSettings.Store}");
+            item.ClearanceItems = fresh.ClearanceItems;
+            StateHasChanged();
+        });
+
         return base.OnInitializedAsync();
     }
 
     public void NextPicture()
     {
-        if(PictureIndex < item.PictureUrls.Count - 1)
+        if (PictureIndex < item.PictureUrls.Count - 1)
         {
             PictureIndex++;
         }
@@ -68,11 +94,11 @@
 
     public void PrevPicture()
     {
-        if(PictureIndex > 0)
+        if (PictureIndex > 0)
         {
             PictureIndex--;
         }
-        else if(item.PictureUrls.Count > 0)
+        else if (item.PictureUrls.Count > 0)
         {
             PictureIndex = item.PictureUrls.Count - 1;
         }

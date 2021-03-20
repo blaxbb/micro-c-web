@@ -43,6 +43,14 @@ namespace micro_c_web.Server.Controllers
             return results;
         }
 
+        [HttpGet]
+        [Route("get")]
+        public async Task<Item> GetOne(string url, string storeId)
+        {
+            var item = await Item.FromUrl(url, storeId);
+            return item;
+        }
+
         private void LoadCachedProperties(ref SearchResults results)
         {
             bool needCache = false;

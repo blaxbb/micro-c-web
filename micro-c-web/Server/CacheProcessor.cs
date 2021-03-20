@@ -61,12 +61,10 @@ namespace micro_c_web.Server
             {
                 if (string.IsNullOrWhiteSpace(cache.Url))
                 {
-                    Console.WriteLine($"{cache.SKU} is missing Url, removing");
                     _context.Remove(cache);
                 }
                 else
                 {
-                    Console.WriteLine($"{cache.SKU} is STALE, PRIMING");
                     var request = new ItemCacheRequest()
                     {
                         Url = cache.Url
