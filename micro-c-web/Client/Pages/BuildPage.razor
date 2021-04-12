@@ -92,6 +92,12 @@
                                         <div class="mt-auto text-right">@comp.Item.Stock</div>
                                     </div>
                                 </div>
+                                @foreach(var serial in comp.Serials.Where(s => !string.IsNullOrWhiteSpace(s)))
+                                {
+                                    <div class="row">
+                                        <div class="col-sm-10 offset-sm-2">@serial</div>
+                                    </div>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(comp.ErrorText))
                                 {
                                     foreach(var line in comp.ErrorText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
@@ -298,6 +304,7 @@
 
         selected.Item.Quantity = comp.Item.Quantity;
         selected.Item.Price = comp.Item.Price;
+        selected.Serials = comp.Serials;
         StateHasChanged();
     }
 

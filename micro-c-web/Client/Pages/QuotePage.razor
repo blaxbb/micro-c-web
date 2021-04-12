@@ -160,13 +160,14 @@ else
 
     private void EditItemSaved(BuildComponent comp)
     {
-        if(selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price)
+        if (selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price || selected.Serials != comp.Serials)
         {
             UnsavedChanges = true;
         }
 
         selected.Item.Quantity = comp.Item.Quantity;
         selected.Item.Price = comp.Item.Price;
+        selected.Serials = comp.Serials;
         StateHasChanged();
     }
 

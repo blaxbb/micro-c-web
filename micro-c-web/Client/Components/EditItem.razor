@@ -37,6 +37,15 @@
             <label class="col-sm-2 col-form-label">Quantity</label>
             <input type="number" class="form-control col-sm-10" @bind-value="Component.Item.Quantity" min="1" step="1" />
         </div>
+        @for(int i = 0; i < Component.Item.Quantity; i++)
+        {
+            var index = i;
+            var existingSerial = Component.Serials.Count > index ? Component.Serials[index] : "";
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Serial Number (@(@index + 1))</label>
+                <input type="text" class="form-control col-sm-10" @oninput="@((ChangeEventArgs args) => SetSerial(index, args.Value.ToString()))" value="@existingSerial"/>
+            </div>
+        }
     </form>
 }
 <div class="modal-component-footer">
@@ -46,8 +55,9 @@
 </div>
 
 @code {
+    private BuildComponent component;
     [Parameter]
-    public BuildComponent Component { get; set; }
+    public BuildComponent Component { get => component; set { component = value; if (Component != null) { Component.Item.PropertyChanged += ItemPropertyChanged; } } }
 
     [Parameter]
     public EventCallback<BuildComponent> ComponentChanged { get; set; }
@@ -57,4 +67,33 @@
 
     [Parameter]
     public EventCallback ItemRemoved { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnInitialized();
+    }
+
+    void ItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if(args.PropertyName == nameof(Item.Quantity))
+        {
+            var qty = Component.Item.Quantity;
+            if (Component.Serials.Count > qty)
+            {
+                Component.Serials.RemoveRange(qty, Component.Serials.Count - qty);
+            }
+        }
+    }
+
+    void SetSerial(int index, string value)
+    {
+        if(Component.Serials.Count <= index)
+        {
+            for (int i = Component.Serials.Count; i <= index; i++)
+            {
+                Component.Serials.Add(null);
+            }
+        }
+        Component.Serials[index] = value;
+    }
 }
