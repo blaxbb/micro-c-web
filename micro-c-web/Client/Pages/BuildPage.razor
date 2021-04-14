@@ -12,7 +12,7 @@
     <EditItem @bind-Component="editModalComponent" ItemSaved=EditItemSaved ItemRemoved="EditItemRemoved" />
 </Modal>
 
-<div class="build-page d-print-none">
+<div class="build-page container-fluid d-print-none">
     @if (components == null)
     {
         <p>Loading...</p>
@@ -21,9 +21,9 @@
     {
         <div class="quote-table-header">
             <div class="row">
-                <input class="col-sm-9 form-control form-control-lg quote-title-control d-print-none" type="text" placeholder="Name" @bind-value="Title" />
-                <h3 class="col-sm-9 quote-title-print d-none d-print-block">@Title</h3>
-                <div class="col-sm-3 quote-table-header-controls">
+                <input class="col-md-8 form-control form-control-lg quote-title-control d-print-none" type="text" placeholder="Name" @bind-value="Title" />
+                <h3 class="col-md-8 quote-title-print d-none d-print-block">@Title</h3>
+                <div class="col-md-auto quote-table-header-controls">
                     <button class="btn btn-primary" @onclick="DoSave">
                         <span class="material-icons">save</span>
                     </button>
@@ -44,7 +44,7 @@
             }
         </div>
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-md-4">
                 <ul class="list-group">
                     @foreach (var comp in components)
                     {
@@ -59,7 +59,7 @@
                                        @onkeyup="@((args) => { if (args.Key == "Enter") itemSearch.SearchSubmit(BuildComponent.CategoryFilterForType(comp.Type)); })" />
                                 @if (!string.IsNullOrWhiteSpace(comp.HintText))
                                 {
-                                    foreach(var line in comp.HintText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                    foreach (var line in comp.HintText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
                                     {
                                         <div class="alert alert-info build-hint">
                                             @line
@@ -92,7 +92,7 @@
                                         <div class="mt-auto text-right">@comp.Item.Stock</div>
                                     </div>
                                 </div>
-                                @foreach(var serial in comp.Serials.Where(s => !string.IsNullOrWhiteSpace(s)))
+                                @foreach (var serial in comp.Serials.Where(s => !string.IsNullOrWhiteSpace(s)))
                                 {
                                     <div class="row">
                                         <div class="col-sm-10 offset-sm-2">@serial</div>
@@ -100,7 +100,7 @@
                                 }
                                 @if (!string.IsNullOrWhiteSpace(comp.ErrorText))
                                 {
-                                    foreach(var line in comp.ErrorText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
+                                    foreach (var line in comp.ErrorText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)))
                                     {
                                         <div class="alert alert-warning build-hint">
                                             @line
@@ -115,7 +115,7 @@
                     <li class="list-group-item text-right">Total: @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * (1 + UserSettings.TaxRate)).ToString("$#.00"))</li>
                 </ul>
             </div>
-            <div class="col-sm-8 build-search-panel">
+            <div class="col-md-8 build-search-panel">
                 <ItemSearch @ref="itemSearch" Action=NewItemSaved ActionName="Add Item" />
             </div>
         </div>
@@ -126,7 +126,7 @@
     <div class="d-none d-print-block">
         <div class="quote-table-header">
             <div class="row">
-                <h3 class="col-sm-9 quote-title-print">@Title</h3>
+                <h3 class="quote-title-print">@Title</h3>
             </div>
         </div>
         <div class="row">
@@ -167,11 +167,22 @@
         </div>
 
         <div class="row">
-            <div class="quote-price-summary card text-right col-sm-3 offset-sm-9">
+            <div class="quote-price-summary card text-right col-md-3 offset-md-9">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">Subtotal: @(components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price).ToString("$#.00"))</li>
                     <li class="list-group-item">Tax (@($"{UserSettings.TaxRate * 100:0.0}")%): @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * UserSettings.TaxRate).ToString("$#.00"))</li>
                     <li class="list-group-item">Total: @((components.Where(c => c.Item != null).Sum(c => c.Item.Quantity * c.Item.Price) * (1 + UserSettings.TaxRate)).ToString("$#.00"))</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="d-none" id="PRINTDEBUG">
+        <div class="row">
+            <div class="quote-price-summary card text-right col-md-3 offset-md-9">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Subtotal:</li>
+                    <li class="list-group-item">Tax</li>
+                    <li class="list-group-item">Total:</li>
                 </ul>
             </div>
         </div>
@@ -215,7 +226,7 @@
         components = new List<BuildComponent>();
 
         var byoTypes = SettingsPage.PresetBYO();
-        foreach(var type in byoTypes)
+        foreach (var type in byoTypes)
         {
             components.Add(new BuildComponent()
             {
@@ -239,7 +250,7 @@
             var fromQuote = JsonSerializer.Deserialize<List<BuildComponent>>(flare.Data);
             Title = flare.Title;
             ShortCode = flare.ShortCode;
-            foreach(var comp in fromQuote.Where(c => c.Item != null))
+            foreach (var comp in fromQuote.Where(c => c.Item != null))
             {
                 InsertComponent(comp);
             }
@@ -297,7 +308,7 @@
 
     private void EditItemSaved(BuildComponent comp)
     {
-        if(selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price)
+        if (selected.Item.Quantity != comp.Item.Quantity || selected.Item.Price != comp.Item.Price)
         {
             UnsavedChanges = true;
         }
@@ -340,10 +351,10 @@
     private async void NewItemSaved(Item item)
     {
         UnsavedChanges = true;
-        if(selected != null)
+        if (selected != null)
         {
             selected.Item = item;
-            if(!components.Any(c => c.Item == null && c.Type == selected.Type))
+            if (!components.Any(c => c.Item == null && c.Type == selected.Type))
             {
                 var index = components.FindLastIndex(c => c.Type == selected.Type);
                 components.Insert(index + 1, new BuildComponent()
@@ -365,7 +376,7 @@
 
     private void UpdateHintsAndErrors()
     {
-        if(components == null)
+        if (components == null)
         {
             return;
         }

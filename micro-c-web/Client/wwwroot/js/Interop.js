@@ -92,3 +92,24 @@ window.FocusElement = function (ele) {
         ele.focus();
     }
 }
+
+window.PrintElement = function (id) {
+    var divToPrint = document.getElementById(id);
+
+    var stylesheets = $("[rel='stylesheet']").toArray();
+    
+    newWin = window.open("");
+    window.newWin = newWin;
+    newWin.document.write('<html><head>');
+    stylesheets.forEach(stylesheet => newWin.document.write(stylesheet.outerHTML));
+    newWin.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
+    newWin.document.write('</head><body ><div>');
+    newWin.document.write(divToPrint.innerHTML);
+    newWin.document.write('</div></body></html>');
+    newWin.document.close(); // necessary for IE >= 10
+    console.log($(newWin).find("#id").innerHTML);
+
+
+    newWin.print();
+    //newWin.close();
+}
