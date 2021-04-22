@@ -5,12 +5,20 @@
 @inject HttpClient Http
 @inject IJSRuntime js
 
+<Modal Id="scannerModal">
+    <div id="scanDebug" class="row">Hello</div>
+    <div class="scanner-viewport row" id="scannerView">
+    </div>
+</Modal>
 
 <div class="row item-search-view" style="flex-direction:row;">
     <div class="sidebar col-sm-4 bg-dark">
         <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
-                <input class="form-control" placeholder="Search" @bind-value="SearchQuery" />
+                <div class="row">
+                    <input class="col-11 form-control" placeholder="Search" @bind-value="SearchQuery" />
+                    <button type="button" class="btn btn-primary" @onclick="(() => ShowScanner())">C</button>
+                </div>
                 <div class="btn-group dropright search-sidebar-item">
                     <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
                     <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="collapse" data-target="#categoryCollapse" aria-controls="categoryCollapse" aria-expanded="false">
@@ -394,13 +402,12 @@
         //};
 
         await ResetFilter();
+        await js.InvokeVoidAsync("InitBarcode");
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
     }
 
     public async void SearchSubmit(string categoryFilter = "")
     {
-        State = PageState.Loading;
-        this.StateHasChanged();
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
             if(string.IsNullOrWhiteSpace(categoryFilter))
@@ -409,6 +416,10 @@
             }
             SearchQuery = "";
         }
+
+        State = PageState.Loading;
+        this.StateHasChanged();
+
         Console.WriteLine($"SEARCH SUBMIT {SearchQuery}");
 
         var currentStore = UserSettings.Store;
@@ -702,6 +713,12 @@
             Selected = res[index - 1];
             await js.InvokeVoidAsync("ScrollToElement", resultElements[index - 1]);
         }
+    }
+
+    public async Task ShowScanner()
+    {
+        await js.InvokeVoidAsync("StartScanner");
+        await js.InvokeVoidAsync("ShowModal", "#scannerModal");
     }
 
     private string CSSEscape(string s)

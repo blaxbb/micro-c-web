@@ -92,6 +92,62 @@ window.FocusElement = function (ele) {
         ele.focus();
     }
 }
+window.InitBarcode = function () {
+    console.log("START");
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#scannerView')
+        },
+        decoder: {
+            readers: [
+                "upc_reader",
+                "code_128_reader"
+            ]
+        },
+        numOfWorkers: 2,
+        frequency: 10,
+        locate: true,
+        locator: {
+            halfSample: true,
+            patchSize: "small", // x-small, small, medium, large, x-large
+            debug: {
+                showCanvas: false,
+                showPatches: false,
+                showFoundPatches: false,
+                showSkeleton: false,
+                showLabels: false,
+                showPatchLabels: false,
+                showRemainingPatchLabels: false,
+                boxFromPatches: {
+                    showTransformed: false,
+                    showTransformedBox: false,
+                    showBB: false
+                }
+            }
+        }
+
+
+    }, function (err) {
+        console.log("init");
+        if (err) {
+            console.log(err);
+            return
+        }
+    });
+    $("#scannerModal").on('hide.bs.modal', function (e) {
+        Quagga.stop();
+    });
+    Quagga.onDetected(function (result) {
+        $("#scanDebug").text("[" + result.box[0][0] + ", " + result.box[0][1] + "]");
+        console.log(result);
+    });
+}
+
+window.StartScanner = function () {
+    Quagga.start();
+}
 
 window.PrintElement = function (id) {
     var divToPrint = document.getElementById(id);
@@ -108,7 +164,6 @@ window.PrintElement = function (id) {
     newWin.document.write('</div></body></html>');
     newWin.document.close(); // necessary for IE >= 10
     console.log($(newWin).find("#id").innerHTML);
-
 
     newWin.print();
     //newWin.close();

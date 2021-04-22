@@ -29,8 +29,14 @@ namespace micro_c_web.Server.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
+                    b.Property<float>("OriginalPrice")
+                        .HasColumnType("real");
+
                     b.Property<string>("PictureUrls")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
 
                     b.Property<int>("ProductType")
                         .HasColumnType("int");

@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "quagga@0.12.1",
+      "destination": "wwwroot/js/quagga/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "@ericblade/quagga2@1.3.1",
+      "destination": "wwwroot/js/quagga2/",
+      "files": [
+        "dist/quagga.js",
+        "dist/quagga.min.js"
+      ]
+    }
+  ]
+}

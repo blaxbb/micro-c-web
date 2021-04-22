@@ -410,3 +410,9 @@ tr:hover .table-hover-column {
 .build-page .search-form {
     display: none;
 }
+
+.scanner-viewport > video,
+.scanner-viewport > canvas {
+    max-width: 100%;
+    width: 100%;
+}

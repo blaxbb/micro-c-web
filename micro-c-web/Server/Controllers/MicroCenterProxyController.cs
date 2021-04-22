@@ -65,6 +65,11 @@ namespace micro_c_web.Server.Controllers
                     {
                         res.PictureUrls = cache.PictureUrls;
                     }
+                    if (res.Price == 0f || res.OriginalPrice == 0f)
+                    {
+                        res.Price = cache.Price;
+                        res.OriginalPrice = cache.Price;
+                    }
                 }
                 else if(!string.IsNullOrWhiteSpace(res.Brand))
                 {

@@ -44,7 +44,9 @@ namespace micro_c_web.Server
                     SKU = item.SKU,
                     Specs = item.Specs,
                     PictureUrls = item.PictureUrls,
-                    Url = item.URL
+                    Url = item.URL,
+                    Price = item.Price,
+                    OriginalPrice = item.OriginalPrice
                 };
                 _context.Add(entry);
                 _context.Remove(request);
@@ -57,7 +59,7 @@ namespace micro_c_web.Server
         {
             Console.WriteLine("!!!STALE CHECKING CACHE!!!");
             int staleCount = 0;
-            foreach(var cache in _context.ItemCache.ToList().Where(i => DateTime.Now - i.Created > TimeSpan.FromDays(1)))
+            foreach(var cache in _context.ItemCache.ToList().Where(i => DateTime.Now - i.Created > TimeSpan.FromHours(12)))
             {
                 if (string.IsNullOrWhiteSpace(cache.Url))
                 {
