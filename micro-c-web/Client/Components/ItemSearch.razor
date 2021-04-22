@@ -5,11 +5,7 @@
 @inject HttpClient Http
 @inject IJSRuntime js
 
-<Modal Id="scannerModal">
-    <div id="scanDebug" class="row">Hello</div>
-    <div class="scanner-viewport row" id="scannerView">
-    </div>
-</Modal>
+<ScannerModal Id="scannerModal" OnScanResult="ScanResult" @ref="scannerModal"/>
 
 <div class="row item-search-view" style="flex-direction:row;">
     <div class="sidebar col-sm-4 bg-dark">
@@ -17,7 +13,7 @@
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
                 <div class="row">
                     <input class="col-11 form-control" placeholder="Search" @bind-value="SearchQuery" />
-                    <button type="button" class="btn btn-primary" @onclick="(() => ShowScanner())">C</button>
+                    <button type="button" class="btn btn-primary" @onclick="(() => ShowScanner())"><span class="oi oi-camera-slr" aria-hidden="true"></span></button>
                 </div>
                 <div class="btn-group dropright search-sidebar-item">
                     <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
@@ -318,6 +314,7 @@
     string ErrorQuery;
 
     Settings UserSettings;
+    ScannerModal scannerModal;
     [Parameter]
     public string ActionName { get; set; }
 
@@ -402,8 +399,9 @@
         //};
 
         await ResetFilter();
-        await js.InvokeVoidAsync("InitBarcode");
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
+        await base.OnInitializedAsync();
+//        await js.InvokeVoidAsync("InitBarcode");
     }
 
     public async void SearchSubmit(string categoryFilter = "")
@@ -717,8 +715,13 @@
 
     public async Task ShowScanner()
     {
-        await js.InvokeVoidAsync("StartScanner");
-        await js.InvokeVoidAsync("ShowModal", "#scannerModal");
+        await scannerModal.ShowScanner();
+    }
+
+    private void ScanResult(string result)
+    {
+        SearchQuery = result;
+        SearchSubmit();
     }
 
     private string CSSEscape(string s)

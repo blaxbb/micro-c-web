@@ -92,7 +92,8 @@ window.FocusElement = function (ele) {
         ele.focus();
     }
 }
-window.InitBarcode = function () {
+window.InitBarcode = function (modal) {
+    window.scannerModal = modal;
     console.log("START");
     Quagga.init({
         inputStream: {
@@ -104,33 +105,19 @@ window.InitBarcode = function () {
             readers: [
                 "upc_reader",
                 "code_128_reader"
-            ]
-        },
-        numOfWorkers: 2,
-        frequency: 10,
-        locate: true,
-        locator: {
-            halfSample: true,
-            patchSize: "small", // x-small, small, medium, large, x-large
+            ],
             debug: {
-                showCanvas: false,
-                showPatches: false,
-                showFoundPatches: false,
-                showSkeleton: false,
-                showLabels: false,
-                showPatchLabels: false,
-                showRemainingPatchLabels: false,
-                boxFromPatches: {
-                    showTransformed: false,
-                    showTransformedBox: false,
-                    showBB: false
-                }
+                drawBoundingBox: true,
+                showFrequency: true,
+                drawScanline: true,
+                showPattern: true
             }
-        }
-
-
+        },
+        numOfWorkers: navigator.hardwareConcurrency,
+        frequency: 30,
     }, function (err) {
         console.log("init");
+        Quagga.start();
         if (err) {
             console.log(err);
             return
@@ -141,12 +128,19 @@ window.InitBarcode = function () {
     });
     Quagga.onDetected(function (result) {
         $("#scanDebug").text("[" + result.box[0][0] + ", " + result.box[0][1] + "]");
-        console.log(result);
+        Quagga.stop();
+        if (window.scannerModal) {
+            window.scannerModal.invokeMethodAsync("ScanResult", result.codeResult.code);
+        }
     });
 }
 
 window.StartScanner = function () {
     Quagga.start();
+}
+
+window.StopScanner = function () {
+    Quagga.stop();
 }
 
 window.PrintElement = function (id) {

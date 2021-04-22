@@ -1,0 +1,38 @@
+﻿@inject IJSRuntime js;
+
+<Modal Id="@Id">
+    <div id="scanDebug" class="row">Hello</div>
+    <div class="scanner-viewport row" id="scannerView">
+    </div>
+</Modal>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnScanResult{ get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            @*await js.InvokeVoidAsync("InitBarcode", DotNetObjectReference.Create(this));*@
+        }
+    }
+
+    public async Task ShowScanner()
+    {
+        await js.InvokeVoidAsync("InitBarcode", DotNetObjectReference.Create(this));
+        @*await js.InvokeVoidAsync("StartScanner");*@
+        await js.InvokeVoidAsync("ShowModal", $"#{Id}");
+    }
+
+    [JSInvokable]
+    public async Task ScanResult(string result)
+    {
+        Console.WriteLine($"RES {result}!!");
+        await js.InvokeVoidAsync("HideModal", $"#{Id}");
+        await OnScanResult.InvokeAsync(result);
+    }
+}
