@@ -6,17 +6,24 @@
     </div>*@
 
     <div class="main">
-        <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <a class="navbar-brand" href="#">Micro C Web</a>
-            <NavLink class="nav-link nav-item" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
-            </NavLink>
-            <NavLink class="nav-link" href="quotes">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Quotes
-            </NavLink>
-            <NavLink class="nav-link ml-auto" href="settings">
-                <span class="oi oi-cog" aria-hidden="true"></span> Settings
-            </NavLink>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <NavLink class="nav-link nav-item" href="" Match="NavLinkMatch.All">
+                        <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
+                    </NavLink>
+                    <NavLink class="nav-link" href="quotes">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Quotes
+                    </NavLink>
+                </ul>
+                <NavLink class="nav-link nav-item" href="settings">
+                    <span class="oi oi-cog" aria-hidden="true"></span> Settings
+                </NavLink>
+            </div>
         </nav>
 
         <div class="content">

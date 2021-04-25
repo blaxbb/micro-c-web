@@ -250,10 +250,11 @@ tr:hover .table-hover-column {
 
 .navbar .nav-link,.navbar .navbar-brand {
     color: lightgray;
+    padding-left: 0px;
 }
 
 .navbar .nav-link.active {
-    border: solid 1px #007bff;
+    background-color: darkgray;
 }
 
 @media (min-width: 768px) {
