@@ -11,13 +11,15 @@
     <div class="sidebar col-sm-4 bg-dark">
         <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
-                <div class="row">
-                    <input class="col-11 form-control" placeholder="Search" @bind-value="SearchQuery" />
-                    <button type="button" class="btn btn-primary" @onclick="(() => ShowScanner())"><span class="oi oi-camera-slr" aria-hidden="true"></span></button>
+                <div class="container">
+                    <div class="row">
+                        <input class="col-10 form-control" placeholder="Search" @bind-value="SearchQuery" />
+                        <button type="button" class="col btn btn-primary" @onclick="(() => ShowScanner())"><span class="oi oi-camera-slr" aria-hidden="true"></span></button>
+                    </div>
                 </div>
-                <div class="btn-group dropright search-sidebar-item">
-                    <button type="button" class="btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
-                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="collapse" data-target="#categoryCollapse" aria-controls="categoryCollapse" aria-expanded="false">
+                <div class="search-sidebar-item row">
+                    <button type="button" class="col-10 btn btn-primary" @onclick="(() => SearchSubmit())">Search All</button>
+                    <button type="button" class="col btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="collapse" data-target="#categoryCollapse" aria-controls="categoryCollapse" aria-expanded="false">
                         <span class="sr-only">Categories</span>
                     </button>
                 </div>
@@ -82,34 +84,40 @@
                         <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
                     </label>
                 </div>
-                <div id="accordion">
-                    @foreach (var filter in SpecFilters)
-                    {
-                        <div class="row">
-                            <div class="btn-group w-100">
-                                <button class="btn btn-primary collapsed col-sm-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
-                                    @filter.Key
-                                </button>
-                                <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))" data-toggle="tooltip" title="Toggle Column" data-boundary="window">
-                                    <span class="material-icons">arrow_right</span>
-                                </button>
+                @if (SpecFilters.Count > 0)
+                {
+                    <button type="button" class="btn btn-primary search-sidebar-item dropdown-toggle" data-toggle="collapse" data-target="#accordion">
+                        Filters
+                    </button>
+                    <div id="accordion" class="collapse hide">
+                        @foreach (var filter in SpecFilters)
+                        {
+                            <div class="row">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-primary collapsed col-sm-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
+                                        @filter.Key
+                                    </button>
+                                    <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))" data-toggle="tooltip" title="Toggle Column" data-boundary="window">
+                                        <span class="material-icons">arrow_right</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div id="@(CSSEscape($"{filter.Key}_collapse"))" class="collapse" aria-labelledby="@(CSSEscape($"{filter.Key}_heading"))" data-parent="#accordion">
-                            @foreach (var item in filter.Value)
-                            {
-                                @if (!string.IsNullOrWhiteSpace(item))
+                            <div id="@(CSSEscape($"{filter.Key}_collapse"))" class="collapse" aria-labelledby="@(CSSEscape($"{filter.Key}_heading"))" data-parent="#accordion">
+                                @foreach (var item in filter.Value)
                                 {
-                                    var id = GetFilterId(filter.Key, item);
-                                    <label class="btn btn-primary active w-100 mb-0 text-left">
-                                        <input type="checkbox" value="" autocomplete="off" id="@id"
+                                    @if (!string.IsNullOrWhiteSpace(item))
+                                    {
+                                        var id = GetFilterId(filter.Key, item);
+                                        <label class="btn btn-primary active w-100 mb-0 text-left">
+                                            <input type="checkbox" value="" autocomplete="off" id="@id"
                                                @onchange="args => FilterChanged(filter.Key, item, args.Value)"> @item
                                         </label>
                                     }
-                            }
-                        </div>
-                    }
-                </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             }
         </div>
     </div>
