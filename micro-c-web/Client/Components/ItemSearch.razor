@@ -149,7 +149,7 @@
             <table class="table table-striped search-results-table">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th class="d-none d-md-table-cell"></th>
                         <th>
                             <div class="row">
                                 @(filteredResults.Count)/@(Results.Items.Count) Results
@@ -208,14 +208,14 @@
                             @onkeydown:preventDefault ="true"
                             @onkeydown:stopPropagation="true"
                         >
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if (item.PictureUrls != null && item.PictureUrls.Count > 0)
                                 {
                                     <img src="@item.PictureUrls.FirstOrDefault()" class="search-thumbnail mx-auto d-block" />
                                 }
                             </td>
                             <td>
-                                <div class="search-name">@item.Name</div>
+                                <div class="search-name two-lines-max">@item.Name</div>
                                 <div class="search-sku">@item.SKU</div>
                             </td>
                             <td class="align-middle">
