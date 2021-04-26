@@ -417,3 +417,11 @@ tr:hover .table-hover-column {
     max-width: 100%;
     width: 100%;
 }
+
+.two-lines-max {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}

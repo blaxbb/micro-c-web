@@ -8,7 +8,7 @@
 <ScannerModal Id="scannerModal" OnScanResult="ScanResult" @ref="scannerModal"/>
 
 <div class="row item-search-view" style="flex-direction:row;">
-    <div class="sidebar col-sm-4 bg-dark">
+    <div class="sidebar col-lg-4 col-md-12 bg-dark">
         <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
                 <div class="container">
@@ -76,28 +76,32 @@
 
             @if (SpecFilters != null && Results != null)
             {
-                <div class="btn-group btn-group-toggle search-sidebar-item" data-toggle="buttons">
-                    <label class="btn btn-outline-primary">
-                        <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
-                    </label>
-                    <label class="btn btn-outline-primary active">
-                        <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
-                    </label>
+                <div class="row">
+                    <div class="btn-group btn-group-toggle col" data-toggle="buttons">
+                        <label class="btn btn-outline-primary">
+                            <input type="radio" name="options" id="inStockOnly" autocomplete="off" @onchange="((args) =>  InStockOnly = true)"> In Stock
+                        </label>
+                        <label class="btn btn-outline-primary active">
+                            <input type="radio" name="options" id="allItems" autocomplete="off" checked @onchange="((args) =>  InStockOnly = false)"> All Items
+                        </label>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-primary dropdown-toggle w-100" data-toggle="collapse" data-target="#accordion">
+                            Filters
+                        </button>
+                    </div>
                 </div>
                 @if (SpecFilters.Count > 0)
                 {
-                    <button type="button" class="btn btn-primary search-sidebar-item dropdown-toggle" data-toggle="collapse" data-target="#accordion">
-                        Filters
-                    </button>
                     <div id="accordion" class="collapse hide">
                         @foreach (var filter in SpecFilters)
                         {
                             <div class="row">
                                 <div class="btn-group w-100">
-                                    <button class="btn btn-primary collapsed col-sm-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
+                                    <button class="btn btn-primary collapsed col-10" data-toggle="collapse" data-target="#@(CSSEscape($"{filter.Key}_collapse"))" aria-expanded="true" aria-controls="@(CSSEscape($"{filter.Key}_collapse"))">
                                         @filter.Key
                                     </button>
-                                    <button type="button" class="col-sm-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))" data-toggle="tooltip" title="Toggle Column" data-boundary="window">
+                                    <button type="button" class="col-2 btn btn-primary" @onclick="(() => ToggleCustomSort(filter.Key))" data-toggle="tooltip" title="Toggle Column" data-boundary="window">
                                         <span class="material-icons">arrow_right</span>
                                     </button>
                                 </div>
@@ -121,7 +125,7 @@
             }
         </div>
     </div>
-    <div class="searchBody col-sm-8">
+    <div class="searchBody col-md-12 col-lg-8">
         @if (State == PageState.Results)
         {
             var filteredResults = FilteredResults.ToList();
