@@ -99,7 +99,13 @@ window.InitBarcode = function (modal) {
         inputStream: {
             name: "Live",
             type: "LiveStream",
-            target: document.querySelector('#scannerView')
+            target: document.querySelector('#scannerView'),
+            constraints: {
+                width: { min: 640, ideal: 1920, max: 4096 },
+                height: { min: 480, ideal: 1080, max: 2400 },
+                aspectRatio: { min: 1, max: 2 },
+                facingMode: 'environment', // or user
+            },
         },
         decoder: {
             readers: [
@@ -115,6 +121,25 @@ window.InitBarcode = function (modal) {
         },
         numOfWorkers: navigator.hardwareConcurrency,
         frequency: 30,
+        //locate: true,
+        //locator: {
+        //    halfSample: true,
+        //    patchSize: "medium", // x-small, small, medium, large, x-large
+        //    debug: {
+        //        showCanvas: false,
+        //        showPatches: false,
+        //        showFoundPatches: false,
+        //        showSkeleton: false,
+        //        showLabels: false,
+        //        showPatchLabels: false,
+        //        showRemainingPatchLabels: false,
+        //        boxFromPatches: {
+        //            showTransformed: false,
+        //            showTransformedBox: false,
+        //            showBB: false
+        //        }
+        //    }
+        //}
     }, function (err) {
         console.log("init");
         Quagga.start();
