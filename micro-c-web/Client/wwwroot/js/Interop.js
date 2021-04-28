@@ -106,6 +106,12 @@ window.InitBarcode = function (modal) {
                 aspectRatio: { min: 1, max: 2 },
                 facingMode: 'environment', // or user
             },
+            area: { // defines rectangle of the detection/localization area
+                top: "25%",    // top offset
+                right: "25%",  // right offset
+                left: "25%",   // left offset
+                bottom: "25%"  // bottom offset
+            },
         },
         decoder: {
             readers: [
