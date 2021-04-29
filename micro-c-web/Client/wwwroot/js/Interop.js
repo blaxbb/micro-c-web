@@ -158,7 +158,6 @@ window.InitBarcode = function (modal) {
         Quagga.stop();
     });
     Quagga.onDetected(function (result) {
-        $("#scanDebug").text("[" + result.box[0][0] + ", " + result.box[0][1] + "]");
         Quagga.stop();
         if (window.scannerModal) {
             window.scannerModal.invokeMethodAsync("ScanResult", result.codeResult.code);
