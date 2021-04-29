@@ -193,3 +193,7 @@ window.PrintElement = function (id) {
     newWin.print();
     //newWin.close();
 }
+
+window.unfocus = function () {
+    $(':focus').blur();
+}

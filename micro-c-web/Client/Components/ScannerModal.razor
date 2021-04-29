@@ -1,4 +1,5 @@
 ﻿@inject IJSRuntime js;
+@using System.Text.RegularExpressions;
 
 <Modal Id="@Id">
     <div id="scanDebug" class="row">Hello</div>
@@ -25,14 +26,40 @@
     {
         await js.InvokeVoidAsync("InitBarcode", DotNetObjectReference.Create(this));
         @*await js.InvokeVoidAsync("StartScanner");*@
-        await js.InvokeVoidAsync("ShowModal", $"#{Id}");
+    await js.InvokeVoidAsync("ShowModal", $"#{Id}");
     }
 
     [JSInvokable]
     public async Task ScanResult(string result)
     {
-        Console.WriteLine($"RES {result}!!");
+        result = FilterBarcodeResult(result);
+        if(string.IsNullOrWhiteSpace(result))
+        {
+            return;
+        }
+
         await js.InvokeVoidAsync("HideModal", $"#{Id}");
         await OnScanResult.InvokeAsync(result);
+    }
+
+    public static string FilterBarcodeResult(string result)
+    {
+        if (Regex.IsMatch(result, "\\d{12}"))
+        {
+            return result;
+        }
+
+        if(result.Length < 6)
+        {
+            return "";
+        }
+
+        var match = Regex.Match(result, "\\d{6}");
+        if (match.Success)
+        {
+            return match.Groups[0].Value;
+        }
+
+        return "";
     }
 }

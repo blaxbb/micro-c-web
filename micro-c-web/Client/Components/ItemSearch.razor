@@ -433,6 +433,8 @@
             SearchQuery = "";
         }
 
+        await js.InvokeVoidAsync("unfocus");
+
         State = PageState.Loading;
         this.StateHasChanged();
 
