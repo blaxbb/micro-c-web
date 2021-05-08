@@ -4,6 +4,7 @@
 
 @inject HttpClient Http
 @inject IJSRuntime js
+@inject NavigationManager navManager
 
 <ScannerModal Id="scannerModal" OnScanResult="ScanResult" @ref="scannerModal"/>
 
@@ -315,9 +316,6 @@
     </div>
 }
 
-
-
-
 @code {
     enum PageState
     {
@@ -327,6 +325,7 @@
         Error,
         Detail
     }
+
     PageState State;
     string ErrorText;
     string ErrorQuery;
@@ -344,7 +343,7 @@
 
     public string SearchQuery { get; set; }
 
-    private Item Selected { get; set; }
+    public Item Selected { get; set; }
 
     private bool InStockOnly { get; set; }
 
@@ -422,7 +421,7 @@
 //        await js.InvokeVoidAsync("InitBarcode");
     }
 
-    public async void SearchSubmit(string categoryFilter = "")
+    public async Task SearchSubmit(string categoryFilter = "")
     {
         if (string.IsNullOrWhiteSpace(SearchQuery))
         {
@@ -460,7 +459,7 @@
             string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
             Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
             resultElements = new ElementReference[Results.Items.Count];
-
+            
             await ResetFilter();
             SetupSpecFilters();
 
@@ -471,15 +470,14 @@
             };
             if(Results.Items.Count == 1)
             {
-                State = PageState.Detail;
+                Selected = Results.Items[0];
+                navManager.NavigateTo($"/item/{Selected.SKU}");
             }
             else
             {
                 State = PageState.Results;
+                await SelectNext();
             }
-
-            this.StateHasChanged();
-            await SelectNext();
         }
         catch(Exception e)
         {
@@ -752,5 +750,12 @@
     public void GotoDetailView()
     {
         State = PageState.Detail;
+        StateHasChanged();
+    }
+
+    public void GotoInitView()
+    {
+        State = PageState.Initial;
+        StateHasChanged();
     }
 }

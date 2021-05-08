@@ -1,13 +1,56 @@
 ﻿@page "/"
+@page "/item/{itemId}"
+
+@inject NavigationManager navManager;
+
 <div class="searchPage">
     <micro_c_web.Client.Components.ItemSearch Action="NavigateItem" ActionName="Details" @ref="search" />
 </div>
 
 @code {
+    [Parameter]
+    public string itemId { get; set; }
+
     ItemSearch search;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Console.WriteLine($"PARAM {itemId}");
+
+        if(search == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(itemId))
+        {
+            search.GotoInitView();
+            return;
+        }
+
+        if (search?.Selected?.SKU == itemId)
+        {
+            search.GotoDetailView();
+        }
+        else
+        {
+            search.SearchQuery = itemId;
+            await search.SearchSubmit();
+            search.GotoDetailView();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await OnParametersSetAsync();
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
     private void NavigateItem(MicroCLib.Models.Item item)
     {
-        search.GotoDetailView();
+        navManager.NavigateTo($"/item/{item.SKU}");
         Console.WriteLine(item.Name);
     }
 }
