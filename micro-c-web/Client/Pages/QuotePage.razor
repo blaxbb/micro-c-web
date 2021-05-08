@@ -14,7 +14,7 @@
 </Modal>
 
 <Modal Id="addItemModal" Name="Add Item">
-    <ItemSearch Action=NewItemSaved ActionName="Add Item" />
+    <ItemSearch Action=NewItemSaved ActionName="Add Item" @ref="search" />
 </Modal>
 <div class="container-fluid">
     @if (components == null)
@@ -117,6 +117,8 @@
 
     private Settings UserSettings;
 
+    private ItemSearch search;
+
     private void ClickedItem(BuildComponent comp)
     {
         Console.WriteLine(comp.Item.Name);
@@ -198,7 +200,8 @@
 
     private async void DoAdd()
     {
-        await js.InvokeVoidAsync("ShowModal", "#addItemModal");
+        search.Reset();
+        await js.InvokeVoidAsync("ShowModalFocus", "#addItemModal", "#SearchText");
     }
 
     private async void NewItemSaved(Item item)

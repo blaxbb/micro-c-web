@@ -7,14 +7,13 @@
 @inject NavigationManager navManager
 
 <ScannerModal Id="scannerModal" OnScanResult="ScanResult" @ref="scannerModal"/>
-
 <div class="row item-search-view p-0" style="flex-direction:row;">
     <div class="sidebar col-md-4 bg-dark">
         <div class="">
             <form class="search-form" @onsubmit="(() => SearchSubmit())">
                 <div class="container pb-1">
                     <div class="row px-4">
-                        <input class="col-10 form-control" placeholder="Search" @bind-value="SearchQuery" />
+                        <input class="col-10 form-control" placeholder="Search" id="SearchText" @bind-value="SearchQuery" />
                         <button type="button" class="col btn btn-primary" @onclick="(() => ShowScanner())"><span class="oi oi-camera-slr" aria-hidden="true"></span></button>
                     </div>
                 </div>
@@ -471,7 +470,14 @@
             if(Results.Items.Count == 1)
             {
                 Selected = Results.Items[0];
-                navManager.NavigateTo($"/item/{Selected.SKU}");
+                if(Action.HasDelegate)
+                {
+                    await SubmitItem();
+                }
+                else
+                {
+                    navManager.NavigateTo($"/item/{Selected.SKU}");
+                }
             }
             else
             {
@@ -532,7 +538,7 @@
         }
     }
 
-    private async void SubmitItem()
+    private async Task SubmitItem()
     {
         Console.WriteLine($"Add item {Selected.Name}");
         await Action.InvokeAsync(Selected);
@@ -757,5 +763,11 @@
     {
         State = PageState.Initial;
         StateHasChanged();
+    }
+
+    public void Reset()
+    {
+        State = PageState.Initial;
+        SearchQuery = "";
     }
 }
