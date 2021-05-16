@@ -14,6 +14,15 @@
         "dist/quagga.js",
         "dist/quagga.min.js"
       ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "idb@6.0.0",
+      "destination": "wwwroot/js/idb/",
+      "files": [
+        "LICENSE",
+        "build/iife/index-min.js"
+      ]
     }
   ]
 }

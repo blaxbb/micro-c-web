@@ -413,7 +413,25 @@
         //        },
         //    }
         //};
+        Console.WriteLine("A");
+        var z = new ItemCache(new Item()
+        {
+            SKU = "555666",
+            Name = "name of product"
+        });
+        z.Category = "cat";
+        Console.WriteLine("B");
+        Console.WriteLine("C");
 
+        var z2 = await ItemCache.GetFromSKU(js, "555666");
+        Console.WriteLine(z2?.SKU ?? "NOT FOUND");
+        var z3 = await ItemCache.GetFromCategory(js, "cat");
+        Console.WriteLine(z3 == null ? "0" : z3.Length);
+        foreach(var i in z3)
+        {
+            Console.WriteLine($"{i.SKU} - {i.Category}");
+        }
+        
         await ResetFilter();
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
         await base.OnInitializedAsync();
@@ -470,6 +488,9 @@
             if(Results.Items.Count == 1)
             {
                 Selected = Results.Items[0];
+                var cache = new ItemCache(Selected);
+                await cache.Cache(js);
+
                 if(Action.HasDelegate)
                 {
                     await SubmitItem();

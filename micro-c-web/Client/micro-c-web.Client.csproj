@@ -5,6 +5,7 @@
     <AssemblyName>$(AssemblyName.Replace(' ', '_'))</AssemblyName>
     <UserSecretsId>53648058-7acb-415b-8f6c-4f7bb8d6823b</UserSecretsId>
 	<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	<RootNamespace>micro_c_web.Client</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,8 +34,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-	<ServiceWorker Include="wwwroot\service-worker.js"
-		PublishedContent="wwwroot\service-worker.published.js"/>
+	<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
 
 
