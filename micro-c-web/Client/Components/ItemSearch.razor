@@ -425,17 +425,17 @@
 
         var z2 = await ItemCache.GetFromSKU(js, "555666");
         Console.WriteLine(z2?.SKU ?? "NOT FOUND");
-        var z3 = await ItemCache.GetFromCategory(js, "cat");
+        var z3 = await ItemCache.GetItemFromCategory(js, "cat");
         Console.WriteLine(z3 == null ? "0" : z3.Length);
         foreach(var i in z3)
         {
             Console.WriteLine($"{i.SKU} - {i.Category}");
         }
-        
+
         await ResetFilter();
         await js.InvokeVoidAsync("stopPropagation", ".search-filter-dropdown");
         await base.OnInitializedAsync();
-//        await js.InvokeVoidAsync("InitBarcode");
+        //        await js.InvokeVoidAsync("InitBarcode");
     }
 
     public async Task SearchSubmit(string categoryFilter = "")
@@ -476,7 +476,7 @@
             string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
             Results = await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
             resultElements = new ElementReference[Results.Items.Count];
-            
+
             await ResetFilter();
             SetupSpecFilters();
 

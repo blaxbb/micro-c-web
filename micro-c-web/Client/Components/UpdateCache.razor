@@ -1,0 +1,72 @@
+﻿@using MicroCLib.Models
+@using static MicroCLib.Models.BuildComponent
+@using micro_c_web.Client.Pages;
+
+@inject HttpClient Http
+@inject IJSRuntime js 
+
+<h3>Updating Cache</h3>
+<progress max="@MaxProgress" value="@Progress" />
+
+@code {
+    public int Progress { get; set; }
+    public int MaxProgress { get; set; }
+    Settings UserSettings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            UserSettings = await Settings.Get(js);
+            MaxProgress = UserSettings.Categories.Count;
+            StateHasChanged();
+
+            foreach(var cat in UserSettings.Categories)
+            {
+                var results = await GetCategory(cat);
+                var cache = new CategoryCache(results.Items, cat);
+                await cache.Cache(js);
+                Console.WriteLine($"CACHED - {cat}");
+                Progress++;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task<SearchResults> GetCategory(ComponentType type)
+    {
+        var currentStore = UserSettings.Store;
+        if (string.IsNullOrWhiteSpace(currentStore))
+        {
+            Console.WriteLine("Error: Store not found!");
+            return new SearchResults();
+        }
+        try
+        {
+            Dictionary<string, string> query = new Dictionary<string, string>()
+            {
+                { "query", ""},
+                {"storeId", currentStore },
+                {"categoryFilter", BuildComponent.CategoryFilterForType(type) },
+                {"orderBy",  "0"},
+                {"page", "0" }
+            };
+
+            string queryString = string.Join("&", query.Select((x) => x.Key + "=" + x.Value.ToString()));
+            return await Http.GetFromJsonAsync<SearchResults>($"MicroCenterProxy/searchAll?{queryString}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
+
+        return new SearchResults();
+    }
+
+}

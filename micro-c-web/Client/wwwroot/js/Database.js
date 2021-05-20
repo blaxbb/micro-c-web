@@ -1,9 +1,12 @@
-﻿const db = idb.openDB("micro-c-cache", 3, {
+﻿const db = idb.openDB("micro-c-cache", 4, {
     upgrade(db, oldVersion, newVersion, transaction) {
         console.log("upgrade");
-        var store = db.createObjectStore("items", { keyPath: "sku" });
-        store.createIndex("Name", "name", { unique: false });
-        store.createIndex("Category", "category", { unique: false })
+        var itemStore = db.createObjectStore("items", { keyPath: "sku" });
+        itemStore.createIndex("Category", "category", { unique: false });
+        itemStore.createIndex("Name", "name", { unique: false });
+
+        var catStore = db.createObjectStore("categories", { keyPath: "category" });
+        catStore.createIndex("Created", "created", { unique: false });
     },
     blocked() {
 
@@ -24,8 +27,15 @@ async function GetCacheItem(sku) {
     return (await db).get('items', sku);
 }
 
-async function GetCacheCategory(category) {
+async function GetCacheItemByCategory(category) {
     var res = await (await db).getAllFromIndex("items", "Category", category);
-    debugger;
     return res;
+}
+
+async function AddCacheCategory(category) {
+    (await db).add("categories", category);
+}
+
+async function GetCacheCategory(category) {
+    return (await db).get('categories', category);
 }

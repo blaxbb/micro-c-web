@@ -38,9 +38,9 @@ namespace micro_c_web.Client
             return await js.InvokeAsync<ItemCache>("GetCacheItem", sku);
         }
 
-        public static async Task<ItemCache[]> GetFromCategory(IJSRuntime js, string category)
+        public static async Task<ItemCache[]> GetItemFromCategory(IJSRuntime js, string category)
         {
-            return await js.InvokeAsync<ItemCache[]>("GetCacheCategory", category);
+            return await js.InvokeAsync<ItemCache[]>("GetCacheItemByCategory", category);
         }
     }
 }
