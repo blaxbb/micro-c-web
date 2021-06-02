@@ -40,6 +40,8 @@ namespace micro_c_web.Server
 
             services.AddSwaggerGen();
 
+            services.AddCors();
+
             services.AddHangfire(configuration => configuration
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
@@ -99,6 +101,12 @@ namespace micro_c_web.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseCors(builder => builder.AllowAnyMethod()
+                                          .AllowAnyHeader()
+                                          .SetIsOriginAllowed(origin => true)
+                                          .AllowCredentials()
+            );
 
             app.UseEndpoints(endpoints =>
             {

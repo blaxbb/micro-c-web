@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using micro_c_web.Server.Data;
 using static MicroCLib.Models.Search;
 using micro_c_web.Server.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace micro_c_web.Server.Controllers
 {
