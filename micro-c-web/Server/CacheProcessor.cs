@@ -29,7 +29,7 @@ namespace micro_c_web.Server
                     Console.WriteLine($"Item from url failed {request.Url}");
                     continue;
                 }
-                Console.WriteLine($"Caching {item.Name}");
+                Console.WriteLine($"Caching {item.Name} {item.SKU}");
 
                 var duplicates = _context.ItemCache.Where(i => i.SKU == item.SKU);
                 foreach (var existing in duplicates)
