@@ -39,6 +39,7 @@ namespace micro_c_web.Server.Controllers
         }
 
         [HttpGet]
+        [Route("entries")]
         public List<ItemCacheEntry> Entries()
         {
             return _context.ItemCache.ToList();
