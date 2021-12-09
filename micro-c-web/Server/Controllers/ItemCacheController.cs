@@ -4,16 +4,23 @@ using MicroCLib.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace micro_c_web.Server.Controllers
 {
- 
+
+
     [ApiController]
     [Route("[controller]")]
     public class ItemCacheController : Controller
     {
+        public static string CompressedCacheResult;
+        public static DateTime CompressedTime;
+
         ApplicationDbContext _context;
         public ItemCacheController(ApplicationDbContext context)
         {
@@ -40,9 +47,28 @@ namespace micro_c_web.Server.Controllers
 
         [HttpGet]
         [Route("entries")]
-        public List<ItemCacheEntry> Entries()
+        public string Entries()
         {
-            return _context.ItemCache.ToList();
+            if (string.IsNullOrWhiteSpace(CompressedCacheResult) || (DateTime.Now - CompressedTime) > TimeSpan.FromMinutes(120))
+            {
+                var res = _context.ItemCache.ToList();
+                var text = Newtonsoft.Json.JsonConvert.SerializeObject(res);
+                var bytes = Encoding.UTF8.GetBytes(text);
+                using (var stream = new MemoryStream())
+                {
+                    using (var gzip = new GZipStream(stream, CompressionLevel.Optimal))
+                    {
+                        gzip.Write(bytes);
+                    }
+
+                    var outputBytes = stream.ToArray();
+
+                    CompressedCacheResult = Convert.ToBase64String(outputBytes);
+                    CompressedTime = DateTime.Now;
+                }
+            }
+
+            return CompressedCacheResult;
         }
 
         [HttpGet]
