@@ -68,6 +68,11 @@ namespace micro_c_web.Server.Controllers
                 item.Specs["UPC"] = search;
                 LoadCachedProperties(ref result, CacheMatchMode.UPC);
             }
+            if(string.IsNullOrWhiteSpace(item.URL))
+            {
+                return null;
+            }
+
             return item;
         }
 
