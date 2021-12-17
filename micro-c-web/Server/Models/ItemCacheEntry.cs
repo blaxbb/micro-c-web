@@ -18,5 +18,6 @@ namespace micro_c_web.Server.Models
         public List<string> PictureUrls { get; set; }
         public float Price { get; set; }
         public float OriginalPrice { get; set; }
+        public string Name { get; set; }
     }
 }

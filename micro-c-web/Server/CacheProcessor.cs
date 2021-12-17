@@ -46,7 +46,8 @@ namespace micro_c_web.Server
                     PictureUrls = item.PictureUrls,
                     Url = item.URL,
                     Price = item.Price,
-                    OriginalPrice = item.OriginalPrice
+                    OriginalPrice = item.OriginalPrice,
+                    Name = item.Name
                 };
                 _context.Add(entry);
                 _context.Remove(request);

@@ -97,7 +97,9 @@ namespace micro_c_web.Server.Controllers
                     Created = DateTime.Now,
                     ProductType = item.ComponentType,
                     SKU = item.SKU,
-                    Specs = item.Specs
+                    Specs = item.Specs,
+                    Name = item.Name,
+                    
                 };
                 _context.Add(entry);
                 await _context.SaveChangesAsync();

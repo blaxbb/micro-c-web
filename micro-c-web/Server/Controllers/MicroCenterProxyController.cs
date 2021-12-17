@@ -52,25 +52,72 @@ namespace micro_c_web.Server.Controllers
             return item;
         }
 
-        private void LoadCachedProperties(ref SearchResults results)
+        [HttpGet]
+        [Route("getCached/{search}")]
+        public Item GetFast(string search)
+        {
+            var item = new Item();
+            var result = new SearchResults() { Items = new List<Item>() { item }, TotalResults = 1 };
+            if(search.Length == 6)
+            {
+                item.SKU = search;
+                LoadCachedProperties(ref result);
+            }
+            else
+            {
+                item.Specs["UPC"] = search;
+                LoadCachedProperties(ref result, CacheMatchMode.UPC);
+            }
+            return item;
+        }
+
+        [HttpGet]
+        [Route("getCachedCategory/{category}")]
+        public SearchResults GetFastCategory(BuildComponent.ComponentType category)
+        {
+            var all = _context.ItemCache.Where(i => i.ProductType == category);
+            var items = all.Select(i =>
+                new Item() {
+                    SKU = i.SKU,
+                    Name = i.Name,
+                    Brand = i.Specs.ContainsKey("Brand") ? i.Specs["Brand"] : "",
+                    Specs = i.Specs,
+                    ComponentType = i.ProductType,
+                    Price = i.Price,
+                    OriginalPrice = i.OriginalPrice,
+                    PictureUrls = i.PictureUrls,
+                    URL = i.Url,
+                }
+            ).ToList();
+            var result = new SearchResults() { Items = items, TotalResults = items.Count };
+            return result;
+        }
+
+        enum CacheMatchMode
+        {
+            SKU,
+            UPC
+        }
+
+        private void LoadCachedProperties(ref SearchResults results, CacheMatchMode mode = CacheMatchMode.SKU)
         {
             bool needCache = false;
             foreach(var res in results.Items)
             {
-                var cache = _context.ItemCache.FirstOrDefault(i => i.SKU == res.SKU);
+                ItemCacheEntry cache = null;
+                switch (mode)
+                {
+                    case CacheMatchMode.SKU:
+                        cache = _context.ItemCache.FirstOrDefault(i => i.SKU == res.SKU);
+                        break;
+                    case CacheMatchMode.UPC:
+                        cache = _context.ItemCache.ToList().FirstOrDefault(i => i.Specs.ContainsKey("UPC") && res.Specs.ContainsKey("UPC") && i.Specs["UPC"] == res.Specs["UPC"]);
+                        break;
+                }
+
                 if(cache != null)
                 {
-                    res.Specs = cache.Specs;
-                    res.ComponentType = cache.ProductType;
-                    if (cache.PictureUrls != null && cache.PictureUrls.Count > 0)
-                    {
-                        res.PictureUrls = cache.PictureUrls;
-                    }
-                    if (res.Price == 0f || res.OriginalPrice == 0f)
-                    {
-                        res.Price = cache.Price;
-                        res.OriginalPrice = cache.Price;
-                    }
+                    LoadCachedProperties(res, cache);
                 }
                 else if(!string.IsNullOrWhiteSpace(res.Brand))
                 {
@@ -89,6 +136,34 @@ namespace micro_c_web.Server.Controllers
             {
                 _context.SaveChanges();
                 Hangfire.BackgroundJob.Enqueue<CacheProcessor>((c) => c.ProcessAllCached());
+            }
+        }
+
+        private static void LoadCachedProperties(Item res, ItemCacheEntry cache)
+        {
+            res.Specs = cache.Specs;
+            res.ComponentType = cache.ProductType;
+
+            if (string.IsNullOrWhiteSpace(res.SKU))
+            {
+                res.SKU = cache.SKU;
+            }
+            if (string.IsNullOrWhiteSpace(res.URL))
+            {
+                res.URL = cache.Url;
+            }
+            if (string.IsNullOrWhiteSpace(res.Name))
+            {
+                res.Name = cache.Name;
+            }
+            if (cache.PictureUrls != null && cache.PictureUrls.Count > 0)
+            {
+                res.PictureUrls = cache.PictureUrls;
+            }
+            if (res.Price == 0f || res.OriginalPrice == 0f)
+            {
+                res.Price = cache.Price;
+                res.OriginalPrice = cache.Price;
             }
         }
     }
