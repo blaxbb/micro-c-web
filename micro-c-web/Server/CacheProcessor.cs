@@ -47,7 +47,8 @@ namespace micro_c_web.Server
                     Url = item.URL,
                     Price = item.Price,
                     OriginalPrice = item.OriginalPrice,
-                    Name = item.Name
+                    Name = item.Name,
+                    Brand = item.Brand
                 };
                 _context.Add(entry);
                 _context.Remove(request);

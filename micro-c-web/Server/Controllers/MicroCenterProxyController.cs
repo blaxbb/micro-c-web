@@ -85,7 +85,7 @@ namespace micro_c_web.Server.Controllers
                 new Item() {
                     SKU = i.SKU,
                     Name = i.Name,
-                    Brand = i.Specs.ContainsKey("Brand") ? i.Specs["Brand"] : "",
+                    Brand = i.Brand,
                     Specs = i.Specs,
                     ComponentType = i.ProductType,
                     Price = i.Price,
@@ -160,6 +160,10 @@ namespace micro_c_web.Server.Controllers
             if (string.IsNullOrWhiteSpace(res.Name))
             {
                 res.Name = cache.Name;
+            }
+            if (string.IsNullOrWhiteSpace(res.Brand))
+            {
+                res.Brand = cache.Brand;
             }
             if (cache.PictureUrls != null && cache.PictureUrls.Count > 0)
             {

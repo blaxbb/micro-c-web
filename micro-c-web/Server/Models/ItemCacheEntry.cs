@@ -19,5 +19,6 @@ namespace micro_c_web.Server.Models
         public float Price { get; set; }
         public float OriginalPrice { get; set; }
         public string Name { get; set; }
+        public string Brand { get; set; }
     }
 }
