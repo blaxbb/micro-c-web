@@ -116,7 +116,10 @@ namespace micro_c_web.Server.Controllers
                         cache = _context.ItemCache.FirstOrDefault(i => i.SKU == res.SKU);
                         break;
                     case CacheMatchMode.UPC:
-                        cache = _context.ItemCache.ToList().FirstOrDefault(i => i.Specs.ContainsKey("UPC") && res.Specs.ContainsKey("UPC") && i.Specs["UPC"] == res.Specs["UPC"]);
+                        if (res.Specs.ContainsKey("UPC"))
+                        {
+                            cache = _context.ItemCache.FirstOrDefault(i => i.UPC == res.Specs["UPC"]);
+                        }
                         break;
                 }
 
@@ -168,6 +171,14 @@ namespace micro_c_web.Server.Controllers
             if (cache.PictureUrls != null && cache.PictureUrls.Count > 0)
             {
                 res.PictureUrls = cache.PictureUrls;
+            }
+            if(res.Specs == null)
+            {
+                res.Specs = new Dictionary<string, string>();
+            }
+            if(!res.Specs.ContainsKey("UPC"))
+            {
+                res.Specs["UPC"] = cache.UPC;
             }
             if (res.Price == 0f || res.OriginalPrice == 0f)
             {

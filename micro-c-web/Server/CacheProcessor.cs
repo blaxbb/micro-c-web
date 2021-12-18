@@ -48,7 +48,8 @@ namespace micro_c_web.Server
                     Price = item.Price,
                     OriginalPrice = item.OriginalPrice,
                     Name = item.Name,
-                    Brand = item.Brand
+                    Brand = item.Brand,
+                    UPC = item.Specs.ContainsKey("UPC") ? item.Specs["UPC"] : ""
                 };
                 _context.Add(entry);
                 _context.Remove(request);

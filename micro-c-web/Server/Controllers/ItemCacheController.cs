@@ -103,8 +103,8 @@ namespace micro_c_web.Server.Controllers
                     Price = item.Price,
                     OriginalPrice = item.OriginalPrice,
                     PictureUrls = item.PictureUrls,
-                    Url = item.URL
-                    
+                    Url = item.URL,
+                    UPC = item.Specs.ContainsKey("UPC") ? item.Specs["UPC"] : ""
                 };
                 _context.Add(entry);
                 await _context.SaveChangesAsync();
@@ -147,7 +147,8 @@ namespace micro_c_web.Server.Controllers
                     Price = item.Price,
                     OriginalPrice = item.OriginalPrice,
                     PictureUrls = item.PictureUrls,
-                    Url = item.URL
+                    Url = item.URL,
+                    UPC = item.Specs.ContainsKey("UPC") ? item.Specs["UPC"] : ""
                 };
                 _context.Add(entry);
                 _context.Remove(request);

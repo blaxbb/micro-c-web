@@ -48,15 +48,22 @@ namespace micro_c_web.Server.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SKU")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Specs")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UPC")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Url")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SKU");
+
+                    b.HasIndex("UPC");
 
                     b.ToTable("ItemCache");
                 });
