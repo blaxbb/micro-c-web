@@ -23,14 +23,14 @@ namespace micro_c_web.Server.Data
         {
             builder.Entity<ItemCacheEntry>().Property(i => i.Specs)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, null),
-                    v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, null)
+                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, new JsonSerializerOptions())
                 );
 
             builder.Entity<ItemCacheEntry>().Property(i => i.PictureUrls)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, null)
+                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions())
                 );
 
             base.OnModelCreating(builder);
