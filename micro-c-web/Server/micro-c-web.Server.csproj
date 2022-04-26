@@ -14,7 +14,7 @@
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.19" />
     <PackageReference Include="Hangfire.Core" Version="1.7.19" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.19" />
-    <PackageReference Include="micro-c-lib" Version="1.0.18" />
+    <PackageReference Include="micro-c-lib" Version="1.0.24" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.2" />
