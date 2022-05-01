@@ -98,6 +98,35 @@ namespace micro_c_web.Server.Controllers
             return result;
         }
 
+        [HttpGet]
+        [Route("getCachedSkus/{skusCsv}")]
+        public SearchResults GetCachedSkus(string skusCsv)
+        {
+            var skus = skusCsv.Split(",").ToList();
+            if(skus.Count == 0)
+            {
+                return new SearchResults();
+            }
+
+            var all = _context.ItemCache.Where(i => skus.Contains(i.SKU));
+            var items = all.Select(i =>
+                new Item()
+                {
+                    SKU = i.SKU,
+                    Name = i.Name,
+                    Brand = i.Brand,
+                    Specs = i.Specs,
+                    ComponentType = i.ProductType,
+                    Price = i.Price,
+                    OriginalPrice = i.OriginalPrice,
+                    PictureUrls = i.PictureUrls,
+                    URL = i.Url,
+                }
+            ).ToList();
+
+            return new SearchResults() { Items = items, TotalResults = items.Count };
+        }
+
         enum CacheMatchMode
         {
             SKU,
