@@ -112,11 +112,11 @@ namespace micro_c_web.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapMetrics();
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
                 endpoints.MapHangfireDashboard();
-                endpoints.MapMetrics();
             });
         }
     }
