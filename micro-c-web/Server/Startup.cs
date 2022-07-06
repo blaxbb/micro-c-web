@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Prometheus;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -101,6 +102,7 @@ namespace micro_c_web.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseHttpMetrics();
 
             app.UseCors(builder => builder.AllowAnyMethod()
                                           .AllowAnyHeader()
@@ -114,6 +116,7 @@ namespace micro_c_web.Server
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
                 endpoints.MapHangfireDashboard();
+                endpoints.MapMetrics();
             });
         }
     }
