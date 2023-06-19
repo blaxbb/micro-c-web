@@ -74,11 +74,6 @@ namespace micro_c_web.Server
             {
                 app.UseDeveloperExceptionPage();
                 app.UseWebAssemblyDebugging();
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MicroCWeb V1");
-                });
 
                 app.UseHangfireDashboard("/hangfire", new DashboardOptions()
                 {
@@ -91,6 +86,11 @@ namespace micro_c_web.Server
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "MicroCWeb V1");
+            });
             Hangfire.BackgroundJob.Enqueue<CacheProcessor>(proc => proc.PrimeStaleItems());
 
             RecurringJob.AddOrUpdate<CacheProcessor>("prime-cache", proc => proc.PrimeStaleItems(), Cron.Hourly(25), queue: "cache");
